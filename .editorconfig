@@ -1,0 +1,19 @@
+[composer.json]
+indent_size = 4
+
+[*.php]
+indent_size = 4
+ij_php_force_empty_methods_in_one_line = true
+ij_php_phpdoc_blank_lines_around_parameters = true
+ij_php_align_key_value_pairs = true
+ij_php_align_class_constants = true
+ij_php_align_enum_cases = true
+ij_php_align_multiline_parameters_in_calls = false
+
+[*.xml]
+indent_size = 2
+tab_width = 2
+ij_continuation_indent_size = 4
+
+[*.md]
+indent_size = 2
