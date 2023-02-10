@@ -1,2 +1,6 @@
 # IDE's
 .idea/
+
+# Composer
+vendor/
+composer.lock

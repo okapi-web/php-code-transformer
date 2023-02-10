@@ -1,0 +1,29 @@
+{
+    "name": "okapi/code-transformer",
+    "description": "PHP Code Transformer is a PHP library that allows you to modify and transform the source code of a loaded PHP class.",
+    "version": "1.0.0",
+    "type": "library",
+    "homepage": "https://github.com/okapi-web/php-code-transformer",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "WalterWoshid",
+            "email": "wotschel.valentin@googlemail.com",
+            "homepage": "https://github.com/WalterWoshid"
+        }
+    ],
+    "keywords": [
+        "code",
+        "transformer",
+        "php",
+        "php-code"
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Okapi\\CodeTransformer\\": "src/"
+        }
+    }
+}
