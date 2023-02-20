@@ -3,6 +3,7 @@
 namespace Okapi\CodeTransformer;
 
 use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
+use Okapi\CodeTransformer\Service\Options;
 use Okapi\Singleton\Singleton;
 
 /**
@@ -49,10 +50,27 @@ abstract class CodeTransformerKernel
         $instance->ensureNotAlreadyInitialized();
 
         if ($instance->transformers) {
-            // TODO: Register services
+            Options::setOptions(
+                cacheDir:      $cacheDir,
+                cacheFileMode: $cacheFileMode,
+                debug:         $debug,
+            );
+
+            $instance->registerServices();
         }
 
         $instance->setInitialized();
+    }
+
+    /**
+     * Register the services.
+     *
+     * @return void
+     */
+    protected function registerServices(): void
+    {
+        // Options provider
+        Options::register();
     }
 
     /**
