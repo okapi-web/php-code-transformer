@@ -2,6 +2,7 @@
 
 namespace Okapi\CodeTransformer;
 
+use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
 use Okapi\Singleton\Singleton;
 
 /**
@@ -41,5 +42,31 @@ abstract class CodeTransformerKernel
         ?string $cacheDir,
         ?int    $cacheFileMode = null,
         bool    $debug = false,
-    ): void {}
+    ): void {
+        self::ensureNotKernelNamespace();
+
+        $instance = self::getInstance();
+        $instance->ensureNotAlreadyInitialized();
+
+        if ($instance->transformers) {
+            // TODO: Register services
+        }
+
+        $instance->setInitialized();
+    }
+
+    /**
+     * Make sure that the kernel is not called from this class.
+     *
+     * @return void
+     */
+    private static function ensureNotKernelNamespace(): void
+    {
+        // Get current namespace and class name
+        $namespace = get_called_class();
+
+        if ($namespace === CodeTransformerKernel::class) {
+            throw new DirectKernelInitializationException;
+        }
+    }
 }
