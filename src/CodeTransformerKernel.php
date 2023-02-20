@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer;
 
 use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
 use Okapi\CodeTransformer\Service\Options;
+use Okapi\CodeTransformer\Service\TransformerLoader;
 use Okapi\Singleton\Singleton;
 
 /**
@@ -56,6 +57,8 @@ abstract class CodeTransformerKernel
                 debug:         $debug,
             );
 
+            TransformerLoader::addTransformers($instance->transformers);
+
             $instance->registerServices();
         }
 
@@ -71,6 +74,9 @@ abstract class CodeTransformerKernel
     {
         // Options provider
         Options::register();
+
+        // Load the user-defined transformers
+        TransformerLoader::register();
     }
 
     /**
