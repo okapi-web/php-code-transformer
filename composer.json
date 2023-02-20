@@ -20,7 +20,8 @@
     ],
     "require": {
         "php": ">=8.1",
-        "okapi/singleton": "^1.0"
+        "okapi/singleton": "^1.0",
+        "okapi/path": "^1.0"
     },
     "autoload": {
         "psr-4": {
