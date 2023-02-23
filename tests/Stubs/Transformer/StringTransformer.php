@@ -32,6 +32,8 @@ class StringTransformer extends Transformer
                     "'Hello from Code Transformer!'",
                 );
 
+
+
                 $code->append('$iAmAppended = true;');
             }
         }

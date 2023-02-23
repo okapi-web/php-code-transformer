@@ -90,10 +90,16 @@ class ApplicationTest extends TestCase
 
         $file = require Util::CACHE_STATES_FILE;
 
-        $key = 'CODE_TRANSFORMER_APP_DIR\\tests\\Stubs\\ClassesToTransform\\StringClass.php';
+        print_r($file);
+
+        $key = 'CODE_TRANSFORMER_APP_DIR\tests\Stubs\ClassesToTransform\StringClass.php';
+        $key = str_replace('\\', DIRECTORY_SEPARATOR, $key);
         $this->assertArrayHasKey($key, $file);
+
+        $cachedFilePath = 'CODE_TRANSFORMER_APP_DIR\tests\cache\transformed\tests\Stubs\ClassesToTransform\StringClass.php';
+        $cachedFilePath = str_replace('\\', DIRECTORY_SEPARATOR, $cachedFilePath);
         $this->assertArrayHasKey('cachedFilePath', $file[$key]);
-        $this->assertEquals('CODE_TRANSFORMER_APP_DIR\tests\cache\transformed\tests\Stubs\ClassesToTransform\StringClass.php', $file[$key]['cachedFilePath']);
+        $this->assertEquals($cachedFilePath, $file[$key]['cachedFilePath']);
         $this->assertArrayHasKey('transformedTime', $file[$key]);
         $this->assertIsInt($file[$key]['transformedTime']);
         $this->assertArrayHasKey('transformerFilePaths', $file[$key]);
