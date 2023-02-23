@@ -90,8 +90,6 @@ class ApplicationTest extends TestCase
 
         $file = require Util::CACHE_STATES_FILE;
 
-        print_r($file);
-
         $key = 'CODE_TRANSFORMER_APP_DIR\tests\Stubs\ClassesToTransform\StringClass.php';
         $key = str_replace('\\', DIRECTORY_SEPARATOR, $key);
         $this->assertArrayHasKey($key, $file);
