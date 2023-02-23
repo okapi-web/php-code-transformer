@@ -2,6 +2,7 @@
 
 namespace Okapi\CodeTransformer\Service;
 
+use Okapi\CodeTransformer\Service\Cache\CachePaths;
 use Okapi\Path\Path;
 use Okapi\Singleton\Singleton;
 
@@ -42,8 +43,10 @@ class Options implements ServiceInterface
      */
     public static bool $debug;
 
+    // region Pre-Initialization
+
     /**
-     * Options constructor.
+     * Set the options.
      *
      * @param string|null $cacheDir
      * @param int|null    $cacheFileMode
@@ -57,14 +60,20 @@ class Options implements ServiceInterface
         $rootDir = getcwd();
 
         if ($rootDir === false) {
+            // @codeCoverageIgnoreStart
             $rootDir = Path::resolve(Path::join(__DIR__, '../../../../..'));
+            // @codeCoverageIgnoreEnd
         }
 
         self::$appDir        = $rootDir;
-        self::$cacheDir      = $cacheDir ?? Path::join($rootDir, 'cache/code-transformer');
+        self::$cacheDir      = $cacheDir ?? Path::join($rootDir, CachePaths::DEFAULT_CACHE_DIR);
         self::$cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
         self::$debug         = $debug ?? false;
     }
+
+    // endregion
+
+    // region Initialization
 
     /**
      * Register the options.
@@ -74,8 +83,10 @@ class Options implements ServiceInterface
     public static function register(): void
     {
         $instance = self::getInstance();
-        $instance->ensureNotAlreadyInitialized();
+        $instance->ensureNotInitialized();
 
         $instance->setInitialized();
     }
+
+    // endregion
 }

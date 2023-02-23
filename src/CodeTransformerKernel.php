@@ -3,8 +3,11 @@
 namespace Okapi\CodeTransformer;
 
 use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
+use Okapi\CodeTransformer\Service\AutoloadInterceptor;
+use Okapi\CodeTransformer\Service\CacheStateManager;
 use Okapi\CodeTransformer\Service\Options;
-use Okapi\CodeTransformer\Service\TransformerLoader;
+use Okapi\CodeTransformer\Service\StreamFilter;
+use Okapi\CodeTransformer\Service\TransformerContainer;
 use Okapi\Singleton\Singleton;
 
 /**
@@ -48,17 +51,23 @@ abstract class CodeTransformerKernel
         self::ensureNotKernelNamespace();
 
         $instance = self::getInstance();
-        $instance->ensureNotAlreadyInitialized();
+        $instance->ensureNotInitialized();
 
+        // Only initialize the kernel if there are transformers
         if ($instance->transformers) {
+            // Pre-initialize the services
+
+            // Set options
             Options::setOptions(
                 cacheDir:      $cacheDir,
                 cacheFileMode: $cacheFileMode,
                 debug:         $debug,
             );
 
-            TransformerLoader::addTransformers($instance->transformers);
+            // Add the transformers
+            TransformerContainer::addTransformers($instance->transformers);
 
+            // Register the services
             $instance->registerServices();
         }
 
@@ -75,8 +84,17 @@ abstract class CodeTransformerKernel
         // Options provider
         Options::register();
 
-        // Load the user-defined transformers
-        TransformerLoader::register();
+        // Manage the user-defined transformers
+        TransformerContainer::register();
+
+        // Cache path manager
+        CacheStateManager::register();
+
+        // Stream filter -> Source transformer
+        StreamFilter::register();
+
+        // Overload the composer class loaders
+        AutoloadInterceptor::register();
     }
 
     /**
