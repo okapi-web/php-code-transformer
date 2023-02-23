@@ -25,8 +25,6 @@ jobs:
       - name: Install PHP
         id: php
         uses: shivammathur/setup-php@v2
-        env:
-          runner: self-hosted
         with:
           php-version: ${{ matrix.php-version }}
 
