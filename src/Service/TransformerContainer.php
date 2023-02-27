@@ -37,6 +37,13 @@ class TransformerContainer implements ServiceInterface
      */
     private array $transformerTargets = [];
 
+    /**
+     * Cached transformer target query results.
+     *
+     * @var array
+     */
+    private array $transformerQueryResults = [];
+
     // region Pre-Initialization
 
     /**
@@ -121,26 +128,7 @@ class TransformerContainer implements ServiceInterface
         return array_keys($instance->transformerTargets);
     }
 
-    /**
-     * Return the list of transformers that match the class name.
-     *
-     * @param string $className
-     *
-     * @return Transformer[]
-     */
-    private function matchTransformers(string $className): array
-    {
-        $matchedInstances = [];
-
-        foreach ($this->transformerTargets as $target => $instances) {
-            $regex = Regex::fromWildcard($target);
-            if ($regex->matches($className)) {
-                $matchedInstances = array_merge($matchedInstances, $instances);
-            }
-        }
-
-        return $matchedInstances;
-    }
+    // region Transform Code
 
     /**
      * Transform the code.
@@ -187,6 +175,37 @@ class TransformerContainer implements ServiceInterface
     }
 
     /**
+     * Return the list of transformers that match the class name.
+     *
+     * @param string $className
+     *
+     * @return Transformer[]
+     */
+    public static function matchTransformers(string $className): array
+    {
+        $instance = self::getInstance();
+
+        // Check if the query has been cached
+        if (isset($instance->transformerQueryResults[$className])) {
+            return $instance->transformerQueryResults[$className];
+        }
+
+        // Match the transformers
+        $matchedInstances = [];
+        foreach ($instance->transformerTargets as $target => $instances) {
+            $regex = Regex::fromWildcard($target);
+            if ($regex->matches($className)) {
+                $matchedInstances = array_merge($matchedInstances, $instances);
+            }
+        }
+
+        // Cache the query result
+        $instance->transformerQueryResults[$className] = $matchedInstances;
+
+        return $matchedInstances;
+    }
+
+    /**
      * Get the list of transformer file paths.
      *
      * @param Transformer[] $transformers
@@ -216,7 +235,7 @@ class TransformerContainer implements ServiceInterface
      * @return void
      * @noinspection PhpMissingReturnTypeInspection For okapi/aop
      */
-    protected function processTransformers(Metadata $metadata, array $transformers)
+    private function processTransformers(Metadata $metadata, array $transformers)
     {
         // Sort the transformers by priority
         usort(
@@ -230,4 +249,6 @@ class TransformerContainer implements ServiceInterface
             $transformer->transform($metadata->code);
         }
     }
+
+    // endregion
 }
