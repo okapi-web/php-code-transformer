@@ -70,6 +70,27 @@ class Code
     }
 
     /**
+     * Add an edit to the source code at a specific position.
+     *
+     * @param int    $startPosition
+     * @param int    $width
+     * @param string $replacement
+     *
+     * @return void
+     */
+    public function editAt(
+        int    $startPosition,
+        int    $width,
+        string $replacement,
+    ): void {
+        $this->stringMutator->edit(
+            $startPosition,
+            $width,
+            $replacement,
+        );
+    }
+
+    /**
      * Add a string to the end of the source code.
      *
      * @param string $string
