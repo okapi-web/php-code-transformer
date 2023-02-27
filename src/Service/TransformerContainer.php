@@ -116,16 +116,18 @@ class TransformerContainer implements ServiceInterface
     // endregion
 
     /**
-     * Get the list of target classes.
+     * Check if the class should be transformed.
      *
-     * @return class-string[]
+     * @param string $className
+     *
+     * @return bool
      */
-    public static function getTargetClasses(): array
+    public static function shouldTransform(string $className): bool
     {
         $instance = self::getInstance();
         $instance->ensureInitialized();
 
-        return array_keys($instance->transformerTargets);
+        return $instance->matchTransformers($className) !== [];
     }
 
     // region Transform Code

@@ -4,7 +4,6 @@ namespace Okapi\CodeTransformer\Service;
 
 use Composer\Autoload\ClassLoader as ComposerClassLoader;
 use Okapi\CodeTransformer\Service\AutoloadInterceptor\ClassLoader;
-use Okapi\CodeTransformer\Util\Finder;
 use Okapi\Singleton\Singleton;
 
 /**
@@ -46,8 +45,6 @@ class AutoloadInterceptor implements ServiceInterface
      */
     private function overloadComposerLoaders(): void
     {
-        $finder = $this->getFinder();
-
         // Get existing composer loaders
         $loaders = spl_autoload_functions();
         foreach ($loaders as $loader) {
@@ -64,7 +61,7 @@ class AutoloadInterceptor implements ServiceInterface
             }
 
             // Register the AOP class loader
-            $loader[0] = new ClassLoader($loader[0], $finder);
+            $loader[0] = new ClassLoader($loader[0]);
 
             // Unregister the original composer loader
             spl_autoload_unregister($loaderToUnregister);
@@ -72,16 +69,5 @@ class AutoloadInterceptor implements ServiceInterface
             // Register the AOP class loader
             spl_autoload_register($loader);
         }
-    }
-
-    /**
-     * Get class finder.
-     *
-     * @return Finder
-     */
-    private function getFinder(): Finder
-    {
-        return (new Finder)
-            ->includeClass(TransformerContainer::getTargetClasses());
     }
 }

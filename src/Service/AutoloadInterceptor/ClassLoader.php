@@ -8,8 +8,9 @@ use Okapi\CodeTransformer\Service\CacheStateManager;
 use Okapi\CodeTransformer\Service\Options;
 use Okapi\CodeTransformer\Service\StreamFilter;
 use Okapi\CodeTransformer\Service\StreamFilter\FilterInjector;
-use Okapi\CodeTransformer\Util\Finder;
+use Okapi\CodeTransformer\Service\TransformerContainer;
 use Okapi\Path\Path;
+use Okapi\Wildcards\Regex;
 
 /**
  * # Code Transformer Class Loader
@@ -27,13 +28,11 @@ class ClassLoader extends ComposerClassLoader
      * Code Transformer class loader constructor.
      *
      * @param ComposerClassLoader $original
-     * @param Finder              $finder
      *
      * @noinspection PhpMissingParentConstructorInspection (Parent already constructed)
      */
     public function __construct(
         private readonly ComposerClassLoader $original,
-        private readonly Finder              $finder,
     ) {}
 
     /**
@@ -68,6 +67,11 @@ class ClassLoader extends ComposerClassLoader
     {
         $filePath = $this->original->findFile($class);
 
+        // Prevent infinite recursion
+        if ($class === Regex::class) {
+            return $filePath;
+        }
+
         // @codeCoverageIgnoreStart
         // Not sure how to test this
         if ($filePath === false) {
@@ -78,7 +82,7 @@ class ClassLoader extends ComposerClassLoader
         $filePath = Path::resolve($filePath);
 
         // Check if the class should be transformed
-        if ($this->finder->hasClass($class)) {
+        if (TransformerContainer::shouldTransform($class)) {
             $cacheState = CacheStateManager::queryCacheState($filePath);
 
             // Check if the file is cached and up to date
