@@ -73,6 +73,7 @@ composer require okapi/code-transformer
 
 use Okapi\CodeTransformer\CodeTransformerKernel;
 
+// Extend from the "CodeTransformerKernel" class
 class Kernel extends CodeTransformerKernel
 {
     // Define a list of transformer classes
@@ -94,8 +95,10 @@ class Kernel extends CodeTransformerKernel
 use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Transformer;
 
+// Extend from the "Transformer" class
 class StringTransformer extends Transformer
 {
+    // Define the target class(es)
     public function getTargetClass(): string|array
     {
         // You can specify a single class or an array of classes
@@ -103,14 +106,18 @@ class StringTransformer extends Transformer
         return MyTargetClass::class;
     }
     
+    // The "transform" method will be called when the target class is loaded
+    // Here you can modify the source code of the target class(es)
     public function transform(Code $code): void
     {
-        // Get the source file node which contains all the nodes of the source code
-        $sourceFileNode = $code->sourceFileNode;
+        // I recommend using the Microsoft\PhpParser library to parse the source
+        // code. It's already included in the dependencies of this package and
+        // the "$code->sourceFileNode" property contains the parsed source code.
+        
+        // But you can also use any other library or manually parse the source
+        // code with basic PHP string functions and "$code->getOriginalSource()"
 
-        // I recommend using the Microsoft\PhpParser library to parse the source code,
-        // but you can also use any other library or manually parse the source code
-        // or just use basic PHP functions with `$code->getOriginalSource()`
+        $sourceFileNode = $code->sourceFileNode;
 
         // Iterate over all nodes
         foreach ($sourceFileNode->getDescendantNodes() as $node) {
@@ -127,9 +134,9 @@ class StringTransformer extends Transformer
                 
                 // You can also manually edit the source code
                 $code->editAt(
-                    $node->getStartPosition(),
-                    $node->getWidth(),
-                    "'Hello from Code Transformer!'",
+                    $node->getStartPosition() + 1,
+                    $node->getWidth() - 2,
+                    "Hello from Code Transformer!",
                 );
 
                 // Append a new line of code
@@ -151,6 +158,7 @@ use Microsoft\PhpParser\TokenKind;
 use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Transformer;
 
+// Replace all "private" keywords with "public"
 class UnPrivateTransformer extends Transformer
 {
     public function getTargetClass(): string|array
@@ -164,8 +172,9 @@ class UnPrivateTransformer extends Transformer
 
         // Iterate over all tokens
         foreach ($sourceFileNode->getDescendantTokens() as $token) {
-            // Replace all private keywords with public
+            // Find "private" keyword
             if ($token->kind === TokenKind::PrivateKeyword) {
+                // Replace it with "public"
                 $code->edit($token, 'public');
             }
         }
@@ -264,9 +273,10 @@ $iAmAppended = true;
 - The `TransformerContainer` matches the class name with the list of transformer target classes
 
 - If the class is matched, we query the cache state to see if the transformed source code is already cached
-  - We check if the cache is valid
+  - Check if the cache is valid: 
     - Modification time of the caching process is less than the modification time of the source file or the transformers
     - Check if the cache file, the source file and the transformers exist
+    - Check if the number of transformers is the same as the number of transformers in the cache
   - If the cache is valid, we load the transformed source code from the cache
   - If not, we convert the class file path to a stream filter path
 
