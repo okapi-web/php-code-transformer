@@ -14,7 +14,7 @@ class StringTransformer extends Transformer
 
     public function getTargetClass(): string|array
     {
-        return [StringClass::class, MultipleTransformersClass::class];
+        return [StringClass::class, 'Okapi*Tests*StringClass', MultipleTransformersClass::class];
     }
 
     public function transform(Code $code): void

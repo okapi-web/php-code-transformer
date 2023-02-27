@@ -198,6 +198,18 @@ class TransformerContainer implements ServiceInterface
         foreach ($instance->transformerTargets as $target => $instances) {
             $regex = Regex::fromWildcard($target);
             if ($regex->matches($className)) {
+                // Check if the transformer is already in the list
+                $alreadyMatched = array_filter(
+                    $matchedInstances,
+                    function (Transformer $transformer) use ($instances) {
+                        return in_array($transformer, $instances, true);
+                    },
+                );
+
+                if ($alreadyMatched) {
+                    continue;
+                }
+
                 $matchedInstances = array_merge($matchedInstances, $instances);
             }
         }
