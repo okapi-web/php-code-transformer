@@ -3,6 +3,7 @@
 namespace Okapi\CodeTransformer\Tests\Stubs\Kernel;
 
 use Okapi\CodeTransformer\CodeTransformerKernel;
+use Okapi\CodeTransformer\Tests\Stubs\Transformer\AddedTransformer1;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\ChangedTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\DeleteCacheFileTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\NoChangesTransformer;
@@ -19,5 +20,6 @@ class ApplicationKernel extends CodeTransformerKernel
         ChangedTransformer::class,
         DeleteCacheFileTransformer::class,
         UnPrivateTransformer::class,
+        AddedTransformer1::class,
     ];
 }

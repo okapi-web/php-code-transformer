@@ -2,7 +2,9 @@
 
 namespace Okapi\CodeTransformer\Tests\Functional\Workflow;
 
+use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform;
+use Okapi\CodeTransformer\Tests\Stubs\Kernel\CachedKernel;
 use Okapi\CodeTransformer\Tests\Util;
 use Okapi\Filesystem\Filesystem;
 use PHPUnit\Framework\TestCase;
@@ -13,13 +15,13 @@ use Throwable;
  */
 class CachedApplicationTest extends TestCase
 {
+    use ClassLoaderMockTrait;
+
     public function testKernel(): void
     {
-        \Okapi\CodeTransformer\Tests\Stubs\Kernel\ApplicationKernel::init(
-            cacheDir: Util::CACHE_DIR,
-        );
-
-        $this->assertTrue(\Okapi\CodeTransformer\Tests\Stubs\Kernel\ApplicationKernel::isInitialized());
+        $this->assertFalse(CachedKernel::isInitialized());
+        CachedKernel::init(cacheDir: Util::CACHE_DIR);
+        $this->assertTrue(CachedKernel::isInitialized());
 
         $this->assertFileExists(Util::CACHE_STATES_FILE);
     }
@@ -35,16 +37,28 @@ class CachedApplicationTest extends TestCase
         $this->assertStringContainsString('$iAmAppended = true;', $file);
     }
 
+    /**
+     * Cached by {@see ApplicationTest::testStringClass()}
+     */
     public function testStringClass(): void
     {
-        $stringClass = new ClassesToTransform\StringClass();
+        $class = ClassesToTransform\StringClass::class;
+        $this->assertTransformerLoadedFromCache($class);
+
+        $stringClass = new $class();
         $this->assertSame('Hello from Code Transformer!', $stringClass->test());
     }
 
+    /**
+     * Cached by {@see ApplicationTest::testNoChangesClass()}
+     */
     public function testNoChangesClass(): void
     {
+        $class = ClassesToTransform\NoChangesClass::class;
+        $this->assertTransformerNotApplied($class);
+
         /** @noinspection PhpUnusedLocalVariableInspection */
-        $stringClass = new ClassesToTransform\StringClass();
+        $stringClass = new $class();
 
         $originalFilePath = __DIR__ . '/../../Stubs/ClassesToTransform/NoChangesClass.php';
         $cachedFilePath = Util::CACHE_DIR . '/transformed/tests/Stubs/ClassesToTransform/NoChangesClass.php';
@@ -52,6 +66,9 @@ class CachedApplicationTest extends TestCase
         $this->assertFileDoesNotExist($cachedFilePath);
     }
 
+    /**
+     * Cached by {@see ApplicationTest::testChangedClass()}
+     */
     public function testChangedClass(): void
     {
         $originalFilePath = __DIR__ . '/../../Stubs/ClassesToTransform/ChangedClass.php';
@@ -68,7 +85,10 @@ class CachedApplicationTest extends TestCase
 
             Filesystem::writeFile($originalFilePath, $changedFileContent);
 
-            $changedClass = new ClassesToTransform\ChangedClass();
+            $class = ClassesToTransform\ChangedClass::class;
+            $this->assertWillBeTransformed($class);
+
+            $changedClass = new $class();
             $this->assertSame('Hello Changed World from Code Transformer!', $changedClass->test());
         } catch (Throwable $e) {
             $exception = $e;
@@ -82,6 +102,9 @@ class CachedApplicationTest extends TestCase
         }
     }
 
+    /**
+     * Cached by {@see ApplicationTest::testDeleteCacheFileClass()}
+     */
     public function testDeleteCacheFileClass(): void
     {
         $cachedFilePath = Util::CACHE_DIR . '/transformed/tests/Stubs/ClassesToTransform/DeleteCacheFileClass.php';
@@ -90,10 +113,38 @@ class CachedApplicationTest extends TestCase
         Filesystem::rm($cachedFilePath);
         $this->assertFileDoesNotExist($cachedFilePath);
 
-        $deleteCacheFileClass = new ClassesToTransform\DeleteCacheFileClass();
+        $class = ClassesToTransform\DeleteCacheFileClass::class;
+        $this->assertWillBeTransformed($class);
+
+        $deleteCacheFileClass = new $class();
         $this->assertSame('Hello World!', $deleteCacheFileClass->test());
 
         $this->assertFileExists($cachedFilePath);
+    }
+
+    /**
+     * Cached by {@see ApplicationTest::testMultipleTransformers()}
+     */
+    public function testMultipleTransformers(): void
+    {
+        $class = ClassesToTransform\MultipleTransformersClass::class;
+        $this->assertTransformerLoadedFromCache($class);
+
+        $multipleTransformersClass = new $class();
+        $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
+        $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
+    }
+
+    /**
+     * Cached by {@see ApplicationTest::testAddedTransformer()}
+     */
+    public function testAddedTransformer(): void
+    {
+        $class = ClassesToTransform\AddedTransformerClass::class;
+        $this->assertWillBeTransformed($class);
+
+        $addedTransformerClass = new $class();
+        $this->assertSame('Hello from Code Transformer!', $addedTransformerClass->test());
     }
 
     public function testClearCache(): void
