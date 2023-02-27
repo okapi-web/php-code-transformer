@@ -169,6 +169,7 @@ class TransformerContainer implements ServiceInterface
         $transformerFilePaths = $instance->getTransformerFilePaths($transformers);
         $cacheState           = new CacheState(
             originalFilePath:     $originalFilePath,
+            className:            $fullClassName,
             cachedFilePath:       $transformed ? $cacheFilePath : null,
             transformedTime:      $fileModificationTime,
             transformerFilePaths: $transformerFilePaths,

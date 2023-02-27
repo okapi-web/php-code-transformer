@@ -105,15 +105,27 @@ class CacheStateManager implements ServiceInterface
         // Unserialize
         $cacheState = eval($cacheStateContent);
 
+        // Filter out invalid items
+        $cacheState = array_filter(
+            $cacheState,
+            function ($cacheStateItem) {
+                return key_exists('className', $cacheStateItem)
+                    && key_exists('cachedFilePath', $cacheStateItem)
+                    && key_exists('transformedTime', $cacheStateItem)
+                    && key_exists('transformerFilePaths', $cacheStateItem);
+            },
+        );
+
         // Convert to array of CacheState objects
         array_walk(
             $cacheState,
             function (&$cacheStateItem, $originalFilePath) {
                 $cacheStateItem = new CacheState(
-                    $originalFilePath,
-                    $cacheStateItem['cachedFilePath'],
-                    $cacheStateItem['transformedTime'],
-                    $cacheStateItem['transformerFilePaths']
+                    originalFilePath:     $originalFilePath,
+                    className:            $cacheStateItem['className'],
+                    cachedFilePath:       $cacheStateItem['cachedFilePath'],
+                    transformedTime:      $cacheStateItem['transformedTime'],
+                    transformerFilePaths: $cacheStateItem['transformerFilePaths']
                 );
             },
         );
