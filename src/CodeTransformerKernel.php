@@ -69,6 +69,7 @@ abstract class CodeTransformerKernel
 
             // Register the services
             $instance->registerServices();
+            $instance->registerAutoloadInterceptor();
         }
 
         $instance->setInitialized();
@@ -92,7 +93,15 @@ abstract class CodeTransformerKernel
 
         // Stream filter -> Source transformer
         StreamFilter::register();
+    }
 
+    /**
+     * Register the autoload interceptor.
+     *
+     * @return void
+     */
+    protected function registerAutoloadInterceptor(): void
+    {
         // Overload the composer class loaders
         AutoloadInterceptor::register();
     }
