@@ -2,7 +2,6 @@
 
 namespace Okapi\CodeTransformer\Tests\Stubs\Kernel;
 
-use Okapi\CodeTransformer\Service\TransformerContainer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\AddedTransformer2;
 
 class CachedKernel extends ApplicationKernel
@@ -11,9 +10,10 @@ class CachedKernel extends ApplicationKernel
         AddedTransformer2::class,
     ];
 
-    /** @noinspection PhpMissingParentConstructorInspection */
-    public function __construct()
+    protected function preInit(): void
     {
-        TransformerContainer::addTransformers($this->addedTransformers);
+        parent::preInit();
+
+        $this->transformerContainer->addTransformers($this->addedTransformers);
     }
 }

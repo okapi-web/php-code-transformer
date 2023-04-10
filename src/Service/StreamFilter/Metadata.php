@@ -3,6 +3,8 @@
 namespace Okapi\CodeTransformer\Service\StreamFilter;
 
 use Okapi\CodeTransformer\Exception\StreamFilter\InvalidStreamException;
+use Okapi\CodeTransformer\Service\ClassLoader\ClassContainer;
+use Okapi\CodeTransformer\Service\DI;
 use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\Path\Path;
 
@@ -40,20 +42,20 @@ class Metadata
     /**
      * Metadata constructor.
      *
-     * @param mixed  $stream
-     * @param string $originalSource
+     * @param mixed          $stream
+     * @param string         $originalSource
+     * @param ClassContainer $classContainer
      */
     public function __construct(
-        mixed $stream,
-        string $originalSource
+        mixed          $stream,
+        string         $originalSource,
+        ClassContainer $classContainer,
     ) {
         if (!is_resource($stream)) {
             // @codeCoverageIgnoreStart
             throw new InvalidStreamException;
             // @codeCoverageIgnoreEnd
         }
-
-        $this->code = new Code($originalSource);
 
         // Create metadata from stream
         $metadata = stream_get_meta_data($stream);
@@ -74,5 +76,10 @@ class Metadata
         $this->uri          = $metadata['uri'];
         $this->crypto       = $metadata['crypto'] ?? null;
         $this->mediatype    = $metadata['mediatype'] ?? null;
+
+        $this->code = DI::make(Code::class, [
+            'source'          => $originalSource,
+            'namespacedClass' => $classContainer->getNamespacedClassByPath($this->uri),
+        ]);
     }
 }

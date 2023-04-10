@@ -1,8 +1,9 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Service\Cache;
 
-use Okapi\CodeTransformer\Service\TransformerContainer;
+use DI\Attribute\Inject;
+use Okapi\CodeTransformer\Service\Matcher\TransformerMatcher;
 
 /**
  * # Cache State
@@ -11,14 +12,21 @@ use Okapi\CodeTransformer\Service\TransformerContainer;
  */
 class CacheState
 {
+    // region DI
+
+    #[Inject]
+    protected TransformerMatcher $transformerMatcher;
+
+    // endregion
+
     /**
      * CacheState constructor.
      *
-     * @param string      $originalFilePath
-     * @param string      $className
-     * @param string|null $cachedFilePath
-     * @param int         $transformedTime
-     * @param string[]    $transformerFilePaths
+     * @param string               $originalFilePath
+     * @param string               $className
+     * @param string|null          $cachedFilePath
+     * @param int                  $transformedTime
+     * @param string[]             $transformerFilePaths
      */
     public function __construct(
         public string  $originalFilePath,
@@ -50,42 +58,102 @@ class CacheState
      */
     public function isFresh(): bool
     {
-        if ($this->cachedFilePath !== null) {
-            // Prevent infinite recursion
-            if ($this->originalFilePath === $this->cachedFilePath) {
-                // @codeCoverageIgnoreStart
-                // This should only happen if the project is misconfigured
-                return false;
-                // @codeCoverageIgnoreEnd
-            }
+        // @codeCoverageIgnoreStart
+        // This should only happen if the project is misconfigured
+        if ($this->checkInfiniteLoop()) {
+            return false;
         }
+        // @codeCoverageIgnoreEnd
 
         $allFiles = array_merge(
             [$this->originalFilePath],
             $this->transformerFilePaths,
         );
 
-        // Check if the files have been modified
-        $lastModified = max(array_map('filemtime', $allFiles));
-        if ($lastModified >= $this->transformedTime) {
+        if ($this->checkFilesModified($allFiles)) {
             return false;
         }
 
-        if ($this->cachedFilePath !== null) {
+        if ($this->cachedFilePath) {
             $allFiles[] = $this->cachedFilePath;
         }
 
+        if (!$this->checkFilesExist($allFiles)) {
+            return false;
+        }
+
+        if (!$this->checkTransformerCount()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the cache is in an infinite loop.
+     *
+     * @return bool True if the cache is in an infinite loop
+     */
+    protected function checkInfiniteLoop(): bool
+    {
+        if ($this->cachedFilePath !== null) {
+            // Same original file and cached file
+            if ($this->originalFilePath === $this->cachedFilePath) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the files have been modified.
+     *
+     * @param string[] $files
+     *
+     * @return bool True if any file has been modified
+     */
+    protected function checkFilesModified(array $files): bool
+    {
+        $lastModified = max(array_map('filemtime', $files));
+        if ($lastModified >= $this->transformedTime) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the files exist.
+     *
+     * @param string[] $files
+     *
+     * @return bool True if all files exist
+     */
+    protected function checkFilesExist(array $files): bool
+    {
         // Check if the cache file exists
-        foreach ($allFiles as $file) {
+        foreach ($files as $file) {
             if (!file_exists($file)) {
                 return false;
             }
         }
 
-        // Check if the transformer count is the same
+        return true;
+    }
+
+    /**
+     * Check if the transformer count is the same.
+     *
+     * @return bool True if the count is the same
+     */
+    protected function checkTransformerCount(): bool
+    {
         // Checking the count alone should be enough
         $cachedTransformerCount = count($this->transformerFilePaths);
-        $currentTransformerCount = count(TransformerContainer::matchTransformers($this->className));
+        $currentTransformerCount = count(
+            $this->transformerMatcher->match($this->className)
+        );
         if ($cachedTransformerCount !== $currentTransformerCount) {
             return false;
         }

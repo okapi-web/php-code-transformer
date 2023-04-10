@@ -13,9 +13,6 @@ class DirectKernelTest extends TestCase
     {
         $this->expectException(DirectKernelInitializationException::class);
 
-        CodeTransformerKernel::init(
-            cacheDir: Util::CACHE_DIR,
-            debug:    true,
-        );
+        CodeTransformerKernel::init();
     }
 }

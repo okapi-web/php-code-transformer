@@ -1,18 +1,12 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Service;
 
 use Error;
+use Exception;
 use Okapi\CodeTransformer\Exception\Transformer\InvalidTransformerClassException;
 use Okapi\CodeTransformer\Exception\Transformer\TransformerNotFoundException;
-use Okapi\CodeTransformer\Service\Cache\CachePaths;
-use Okapi\CodeTransformer\Service\Cache\CacheState;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata;
 use Okapi\CodeTransformer\Transformer;
-use Okapi\Filesystem\Filesystem;
-use Okapi\Singleton\Singleton;
-use Okapi\Wildcards\Regex;
-use ReflectionClass;
 
 /**
  * # Transformer Container
@@ -21,8 +15,6 @@ use ReflectionClass;
  */
 class TransformerContainer implements ServiceInterface
 {
-    use Singleton;
-
     /**
      * The list of transformers.
      *
@@ -33,16 +25,9 @@ class TransformerContainer implements ServiceInterface
     /**
      * Associative array of transformer instances by target class name.
      *
-     * @var array<string, Transformer[]>
+     * @var array<string, Transformer[]> The key is a wildcard target class name.
      */
     private array $transformerTargets = [];
-
-    /**
-     * Cached transformer target query results.
-     *
-     * @var array
-     */
-    private array $transformerQueryResults = [];
 
     // region Pre-Initialization
 
@@ -53,13 +38,10 @@ class TransformerContainer implements ServiceInterface
      *
      * @return void
      */
-    public static function addTransformers(array $transformers): void
+    public function addTransformers(array $transformers): void
     {
-        $instance = self::getInstance();
-        $instance->ensureNotInitialized();
-
-        $instance->transformers = array_merge(
-            $instance->transformers,
+        $this->transformers = array_merge(
+            $this->transformers,
             $transformers,
         );
     }
@@ -73,14 +55,9 @@ class TransformerContainer implements ServiceInterface
      *
      * @return void
      */
-    public static function register(): void
+    public function register(): void
     {
-        $instance = self::getInstance();
-        $instance->ensureNotInitialized();
-
-        $instance->loadTransformers();
-
-        $instance->setInitialized();
+        $this->loadTransformers();
     }
 
     /**
@@ -93,8 +70,8 @@ class TransformerContainer implements ServiceInterface
         foreach ($this->transformers as $transformer) {
             // Instantiate the transformer
             try {
-                $transformerInstance = new $transformer();
-            } catch (Error) {
+                $transformerInstance = DI::make($transformer);
+            } catch (Error|Exception) {
                 throw new TransformerNotFoundException($transformer);
             }
 
@@ -103,12 +80,13 @@ class TransformerContainer implements ServiceInterface
             if (!$isTransformer) {
                 throw new InvalidTransformerClassException($transformer);
             }
+            assert($transformerInstance instanceof Transformer);
 
             /** @var string[] $targets */
             $targets = (array)$transformerInstance->getTargetClass();
 
-            foreach ($targets as $target) {
-                $this->transformerTargets[$target][] = $transformerInstance;
+            foreach ($targets as $classRegex) {
+                $this->transformerTargets[$classRegex][] = $transformerInstance;
             }
         }
     }
@@ -116,154 +94,12 @@ class TransformerContainer implements ServiceInterface
     // endregion
 
     /**
-     * Check if the class should be transformed.
+     * Get the transformer targets.
      *
-     * @param string $className
-     *
-     * @return bool
+     * @return array<string, Transformer[]> The key is a wildcard target class name.
      */
-    public static function shouldTransform(string $className): bool
+    public function getTransformerTargets(): array
     {
-        $instance = self::getInstance();
-        $instance->ensureInitialized();
-
-        return $instance->matchTransformers($className) !== [];
+        return $this->transformerTargets;
     }
-
-    // region Transform Code
-
-    /**
-     * Transform the code.
-     *
-     * @param Metadata $metadata
-     *
-     * @return void
-     *
-     * @noinspection PhpMissingReturnTypeInspection For okapi/aop
-     */
-    public static function transform(Metadata $metadata)
-    {
-        $instance = self::getInstance();
-        $instance->ensureInitialized();
-
-        $fullClassName = $metadata->code->getFullClassName();
-
-        // Process the transformers
-        $transformers = $instance->matchTransformers($fullClassName);
-        $instance->processTransformers($metadata, $transformers);
-
-        $originalFilePath = $metadata->uri;
-        $cacheFilePath    = CachePaths::getTransformedCachePath($originalFilePath);
-        $transformed      = $metadata->code->hasChanges();
-
-        // Save the transformed code
-        if ($transformed) {
-            Filesystem::writeFile(
-                $cacheFilePath,
-                $metadata->code->getNewSource(),
-            );
-        }
-
-        // Update the cache state
-        $fileModificationTime = $_SERVER['REQUEST_TIME'] ?? time();
-        $transformerFilePaths = $instance->getTransformerFilePaths($transformers);
-        $cacheState           = new CacheState(
-            originalFilePath:     $originalFilePath,
-            className:            $fullClassName,
-            cachedFilePath:       $transformed ? $cacheFilePath : null,
-            transformedTime:      $fileModificationTime,
-            transformerFilePaths: $transformerFilePaths,
-        );
-        CacheStateManager::setCacheState($originalFilePath, $cacheState);
-    }
-
-    /**
-     * Return the list of transformers that match the class name.
-     *
-     * @param string $className
-     *
-     * @return Transformer[]
-     */
-    public static function matchTransformers(string $className): array
-    {
-        $instance = self::getInstance();
-
-        // Check if the query has been cached
-        if (isset($instance->transformerQueryResults[$className])) {
-            return $instance->transformerQueryResults[$className];
-        }
-
-        // Match the transformers
-        $matchedInstances = [];
-        foreach ($instance->transformerTargets as $target => $instances) {
-            $regex = Regex::fromWildcard($target);
-            if ($regex->matches($className)) {
-                // Check if the transformer is already in the list
-                $alreadyMatched = array_filter(
-                    $matchedInstances,
-                    function (Transformer $transformer) use ($instances) {
-                        return in_array($transformer, $instances, true);
-                    },
-                );
-
-                if ($alreadyMatched) {
-                    continue;
-                }
-
-                $matchedInstances = array_merge($matchedInstances, $instances);
-            }
-        }
-
-        // Cache the query result
-        $instance->transformerQueryResults[$className] = $matchedInstances;
-
-        return $matchedInstances;
-    }
-
-    /**
-     * Get the list of transformer file paths.
-     *
-     * @param Transformer[] $transformers
-     *
-     * @return string[]
-     *
-     * @noinspection PhpDocMissingThrowsInspection
-     */
-    private function getTransformerFilePaths(array $transformers): array
-    {
-        return array_map(
-            function (Transformer $transformer) {
-                /** @noinspection PhpUnhandledExceptionInspection Handled by TransformerNotFoundException */
-                $reflection = new ReflectionClass($transformer);
-                return $reflection->getFileName();
-            },
-            $transformers,
-        );
-    }
-
-    /**
-     * Process the transformers.
-     *
-     * @param Metadata      $metadata
-     * @param Transformer[] $transformers
-     *
-     * @return void
-     * @noinspection PhpMissingReturnTypeInspection For okapi/aop
-     */
-    private function processTransformers(Metadata $metadata, array $transformers)
-    {
-        // Sort the transformers by priority
-        usort(
-            $transformers,
-            function (Transformer $a, Transformer $b) {
-                return $a->order <=> $b->order;
-            },
-        );
-
-        foreach ($transformers as $transformer) {
-            $transformer->transform($metadata->code);
-        }
-    }
-
-    // endregion
 }

@@ -12,14 +12,14 @@ use Okapi\CodeTransformer\Exception\TransformerException;
 class TransformerNotFoundException extends TransformerException
 {
     /**
-     * Create a new instance of the exception.
+     * TransformerNotFoundException constructor.
      *
      * @param class-string $transformerClass
      */
     public function __construct(string $transformerClass)
     {
         parent::__construct(
-            message: "Transformer class '$transformerClass' does not exist.",
+            "Transformer class '$transformerClass' does not exist.",
         );
     }
 }

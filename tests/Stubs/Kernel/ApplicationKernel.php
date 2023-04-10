@@ -10,9 +10,12 @@ use Okapi\CodeTransformer\Tests\Stubs\Transformer\NoChangesTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\StringTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\SyntaxErrorTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\UnPrivateTransformer;
+use Okapi\CodeTransformer\Tests\Util;
 
 class ApplicationKernel extends CodeTransformerKernel
 {
+    protected ?string $cacheDir = Util::CACHE_DIR;
+
     protected array $transformers = [
         StringTransformer::class,
         NoChangesTransformer::class,

@@ -2,8 +2,9 @@
 
 namespace Okapi\CodeTransformer\Tests;
 
-use Okapi\CodeTransformer\Service\AutoloadInterceptor\ClassLoader;
+use Okapi\CodeTransformer\Service\ClassLoader\ClassLoader;
 use Okapi\CodeTransformer\Service\Cache\CachePaths;
+use Okapi\CodeTransformer\Service\DI;
 use Okapi\CodeTransformer\Service\StreamFilter;
 use Okapi\CodeTransformer\Service\StreamFilter\FilterInjector;
 use Okapi\Path\Path;
@@ -65,7 +66,8 @@ trait ClassLoaderMockTrait
     public function assertTransformerLoadedFromCache(string $className): void
     {
         $filePath = $this->findOriginalClassMock($className);
-        $cachePath = CachePaths::getTransformedCachePath($filePath);
+        $cachePaths = DI::get(CachePaths::class);
+        $cachePath = $cachePaths->getTransformedCachePath($filePath);
         $filePathMock = $this->findClassMock($className);
 
         Assert::assertEquals(

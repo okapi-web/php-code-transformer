@@ -28,7 +28,9 @@
         "okapi/filesystem": "^1.0",
         "okapi/path": "^1.0",
         "okapi/singleton": "^1.0",
-        "okapi/wildcards": "^1.0"
+        "okapi/wildcards": "^1.0",
+        "php-di/php-di": "^7.0",
+        "roave/better-reflection": "^6.8"
     },
     "require-dev": {
         "phpunit/phpunit": "dev-main",

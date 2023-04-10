@@ -1,16 +1,16 @@
 <?php
-
-namespace Okapi\CodeTransformer\Service\AutoloadInterceptor;
+/** @noinspection PhpPropertyOnlyWrittenInspection */
+namespace Okapi\CodeTransformer\Service\ClassLoader;
 
 use Composer\Autoload\ClassLoader as ComposerClassLoader;
+use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Service\AutoloadInterceptor;
 use Okapi\CodeTransformer\Service\CacheStateManager;
+use Okapi\CodeTransformer\Service\Matcher\TransformerMatcher;
 use Okapi\CodeTransformer\Service\Options;
 use Okapi\CodeTransformer\Service\StreamFilter;
 use Okapi\CodeTransformer\Service\StreamFilter\FilterInjector;
-use Okapi\CodeTransformer\Service\TransformerContainer;
 use Okapi\Path\Path;
-use Okapi\Wildcards\Regex;
 
 /**
  * # Code Transformer Class Loader
@@ -24,6 +24,25 @@ use Okapi\Wildcards\Regex;
  */
 class ClassLoader extends ComposerClassLoader
 {
+    // region DI
+
+    #[Inject]
+    private TransformerMatcher $transformerMatcher;
+
+    #[Inject]
+    protected CacheStateManager $cacheStateManager;
+
+    #[Inject]
+    protected Options $options;
+
+    #[Inject]
+    protected FilterInjector $filterInjector;
+
+    #[Inject]
+    protected ClassContainer $classContainer;
+
+    // endregion
+
     /**
      * Code Transformer class loader constructor.
      *
@@ -32,19 +51,19 @@ class ClassLoader extends ComposerClassLoader
      * @noinspection PhpMissingParentConstructorInspection (Parent already constructed)
      */
     public function __construct(
-        private readonly ComposerClassLoader $original,
+        public readonly ComposerClassLoader $original,
     ) {}
 
     /**
      * Autoload a class.
      *
-     * @param $class
+     * @param $namespacedClass
      *
      * @return bool
      */
-    public function loadClass($class): bool
+    public function loadClass($namespacedClass): bool
     {
-        if ($file = $this->findFile($class)) {
+        if ($file = $this->findFile($namespacedClass)) {
             include $file;
 
             return true;
@@ -59,18 +78,13 @@ class ClassLoader extends ComposerClassLoader
     /**
      * Find the path to the file and apply the transformers.
      *
-     * @param $class
+     * @param $namespacedClass
      *
      * @return false|string
      */
-    public function findFile($class): false|string
+    public function findFile($namespacedClass): false|string
     {
-        $filePath = $this->original->findFile($class);
-
-        // Prevent infinite recursion
-        if ($class === Regex::class) {
-            return $filePath;
-        }
+        $filePath = $this->original->findFile($namespacedClass);
 
         // @codeCoverageIgnoreStart
         // Not sure how to test this
@@ -79,24 +93,60 @@ class ClassLoader extends ComposerClassLoader
         }
         // @codeCoverageIgnoreEnd
 
+        // Prevent infinite recursion
+        if ($this->isInternal($namespacedClass)) {
+            return $filePath;
+        }
+
         $filePath = Path::resolve($filePath);
 
         // Check if the class should be transformed
-        if (TransformerContainer::shouldTransform($class)) {
-            $cacheState = CacheStateManager::queryCacheState($filePath);
+        if ($this->transformerMatcher->shouldTransform($namespacedClass)) {
+            $cacheState = $this->cacheStateManager->queryCacheState($filePath);
 
             // Check if the file is cached and up to date
-            if (!Options::$debug && $cacheState?->isFresh()) {
+            if (!$this->options->isDebug() && $cacheState?->isFresh()) {
                 // Use the cached file if transformations have been applied
                 // Or return the original file if no transformations have been applied
                 return $cacheState->cachedFilePath ?? $filePath;
             }
 
+            // Add the class to store the file path
+            $this->classContainer->addNamespacedClassPath($filePath, $namespacedClass);
+
             // Replace the file path with a PHP stream filter
             /** @see StreamFilter::filter() */
-            return FilterInjector::rewrite($filePath);
+            return $this->filterInjector->rewrite($filePath);
         }
 
         return $filePath;
+    }
+
+    /**
+     * Check if the class is internal to the Code Transformer.
+     *
+     * @param string $class
+     *
+     * @return bool
+     */
+    protected function isInternal(string $class): bool
+    {
+        // Code Transformer
+        if (str_starts_with($class, "Okapi\\CodeTransformer\\")
+            && !str_starts_with($class, "Okapi\\CodeTransformer\\Tests\\")) {
+            return true;
+        }
+
+        // Wildcards
+        if (str_starts_with($class, "Okapi\\Wildcards\\")) {
+            return true;
+        }
+
+        // DI
+        if (str_starts_with($class, "DI\\")) {
+            return true;
+        }
+
+        return false;
     }
 }

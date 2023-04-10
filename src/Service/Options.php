@@ -2,46 +2,56 @@
 
 namespace Okapi\CodeTransformer\Service;
 
-use Okapi\CodeTransformer\Service\Cache\CachePaths;
 use Okapi\Path\Path;
-use Okapi\Singleton\Singleton;
 
 /**
  * # Options
  *
- * The `Options` class provides access to the options passed to the `CodeTransformerKernel`.
+ * The `Options` class provides access to the options passed to the
+ * `CodeTransformerKernel`.
  */
 class Options implements ServiceInterface
 {
-    use Singleton;
+    // region Options
 
     /**
      * The application directory.
      *
      * @var string
      */
-    public static string $appDir;
+    private string $appDir;
 
     /**
      * The cache directory.
      *
      * @var string
      */
-    public static string $cacheDir;
+    private string $cacheDir;
 
     /**
      * The cache file mode.
      *
      * @var int
      */
-    public static int $cacheFileMode;
+    private int $cacheFileMode;
 
     /**
      * Enable debug mode. This will disable the cache.
      *
      * @var bool
      */
-    public static bool $debug;
+    private bool $debug;
+
+    // endregion
+
+    /**
+     * # Default cache directory.
+     *
+     * This directory is used if no cache directory is provided.
+     *
+     * @var string
+     */
+    public string $defaultCacheDir = 'cache/code-transformer';
 
     // region Pre-Initialization
 
@@ -52,7 +62,7 @@ class Options implements ServiceInterface
      * @param int|null    $cacheFileMode
      * @param bool|null   $debug
      */
-    public static function setOptions(
+    public function setOptions(
         ?string $cacheDir,
         ?int    $cacheFileMode,
         ?bool   $debug,
@@ -65,10 +75,10 @@ class Options implements ServiceInterface
             // @codeCoverageIgnoreEnd
         }
 
-        self::$appDir        = $rootDir;
-        self::$cacheDir      = $cacheDir ?? Path::join($rootDir, CachePaths::DEFAULT_CACHE_DIR);
-        self::$cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
-        self::$debug         = $debug ?? false;
+        $this->appDir        = $rootDir;
+        $this->cacheDir      = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
+        $this->cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
+        $this->debug         = $debug ?? false;
     }
 
     // endregion
@@ -76,17 +86,44 @@ class Options implements ServiceInterface
     // region Initialization
 
     /**
-     * Register the options.
-     *
-     * @return void
+     * @inheritDoc
      */
-    public static function register(): void
+    public function register(): void
     {
-        $instance = self::getInstance();
-        $instance->ensureNotInitialized();
-
-        $instance->setInitialized();
+        // Nothing to do here.
     }
 
     // endregion
+
+    /**
+     * Get the application directory.
+     */
+    public function getAppDir(): string
+    {
+        return $this->appDir;
+    }
+
+    /**
+     * Get the cache directory.
+     */
+    public function getCacheDir(): string
+    {
+        return $this->cacheDir;
+    }
+
+    /**
+     * Get the cache file mode.
+     */
+    public function getCacheFileMode(): int
+    {
+        return $this->cacheFileMode;
+    }
+
+    /**
+     * Check if debug mode is enabled.
+     */
+    public function isDebug(): bool
+    {
+        return $this->debug;
+    }
 }

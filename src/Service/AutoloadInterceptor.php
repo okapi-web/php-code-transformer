@@ -3,8 +3,7 @@
 namespace Okapi\CodeTransformer\Service;
 
 use Composer\Autoload\ClassLoader as ComposerClassLoader;
-use Okapi\CodeTransformer\Service\AutoloadInterceptor\ClassLoader;
-use Okapi\Singleton\Singleton;
+use Okapi\CodeTransformer\Service\ClassLoader\ClassLoader;
 
 /**
  * # Autoload Interceptor
@@ -20,22 +19,20 @@ use Okapi\Singleton\Singleton;
  */
 class AutoloadInterceptor implements ServiceInterface
 {
-    use Singleton;
+    /**
+     * The DI key for the original composer class loader.
+     */
+    public const DI = 'okapi.code-transformer.service.composer.class-loader';
 
     /**
      * Register the autoload interceptor.
      *
      * @return void
      */
-    public static function register(): void
+    public function register(): void
     {
-        $instance = self::getInstance();
-        $instance->ensureNotInitialized();
-
         // Overload existing composer loaders
-        $instance->overloadComposerLoaders();
-
-        $instance->setInitialized();
+        $this->overloadComposerLoaders();
     }
 
     /**
@@ -60,8 +57,14 @@ class AutoloadInterceptor implements ServiceInterface
                 // @codeCoverageIgnoreEnd
             }
 
+            // Get the original composer loader
+            $original = $loader[0];
+            DI::set(self::DI, $original);
+
             // Register the AOP class loader
-            $loader[0] = new ClassLoader($loader[0]);
+            $loader[0] = DI::make(ClassLoader::class, [
+                'original' => $original,
+            ]);
 
             // Unregister the original composer loader
             spl_autoload_unregister($loaderToUnregister);

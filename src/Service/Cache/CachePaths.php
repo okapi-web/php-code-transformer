@@ -1,7 +1,8 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Service\Cache;
 
+use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Service\Options;
 use Okapi\Path\Path;
 
@@ -14,25 +15,29 @@ use Okapi\Path\Path;
 class CachePaths
 {
     /**
-     * # Default cache directory.
-     *
-     * This directory is used if no cache directory is provided.
-     */
-    public const DEFAULT_CACHE_DIR = 'cache/code-transformer';
-
-    /**
      * # Directory of the transformed classes.
      *
      * This directory creates an exact copy of the original file structure.
      *
      * The transformed class has all the transformations applied to it.
+     *
+     * @var string
      */
-    public const TRANSFORMED_DIR = 'transformed';
+    private string $transformedDir = 'transformed';
 
     /**
      * Name of the file with cache paths.
+     *
+     * @var string
      */
-    public const CACHE_FILE_NAME = 'cache_states.php';
+    private string $cacheFileName = 'cache_states.php';
+
+    // region DI
+
+    #[Inject]
+    private Options $options;
+
+    // endregion
 
     /**
      * Get the file path for a transformed file.
@@ -41,9 +46,9 @@ class CachePaths
      *
      * @return string
      */
-    public static function getTransformedCachePath(string $filePath): string
+    public function getTransformedCachePath(string $filePath): string
     {
-        return self::appendToCachePath($filePath, self::TRANSFORMED_DIR);
+        return $this->appendToCachePath($filePath, $this->transformedDir);
     }
 
     /**
@@ -53,16 +58,17 @@ class CachePaths
      * @param string $append
      *
      * @return string
-     *
-     * @noinspection PhpSameParameterValueInspection For okapi/aop
      */
-    private static function appendToCachePath(string $file, string $append): string
+    protected function appendToCachePath(string $file, string $append): string
     {
+        $appDir   = $this->options->getAppDir();
+        $cacheDir = $this->options->getCacheDir();
+
         // Append the string to the cache dir
-        $newDir = Path::join(Options::$cacheDir, $append);
+        $newDir = Path::join($cacheDir, $append);
 
         return Path::resolve(
-            str_replace(Options::$appDir, $newDir, $file),
+            str_replace($appDir, $newDir, $file),
         );
     }
 
@@ -71,8 +77,10 @@ class CachePaths
      *
      * @return string
      */
-    public static function getCacheFilePath(): string
+    public function getCacheFilePath(): string
     {
-        return Path::join(Options::$cacheDir, self::CACHE_FILE_NAME);
+        $cacheDir = $this->options->getCacheDir();
+
+        return Path::join($cacheDir, $this->cacheFileName);
     }
 }

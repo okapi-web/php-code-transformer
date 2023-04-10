@@ -16,7 +16,7 @@ class UnPrivateTransformer extends Transformer
 
     public function transform(Code $code): void
     {
-        $sourceFileNode = $code->sourceFileNode;
+        $sourceFileNode = $code->getSourceFileNode();
 
         foreach ($sourceFileNode->getDescendantTokens() as $token) {
             if ($token->kind === TokenKind::PrivateKeyword) {

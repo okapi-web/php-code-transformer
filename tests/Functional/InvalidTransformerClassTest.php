@@ -17,13 +17,13 @@ class InvalidTransformerClassTest extends TestCase
     {
         $this->expectException(TransformerNotFoundException::class);
 
-        TransformerDoesNotExistKernel::init(cacheDir: Util::CACHE_DIR);
+        TransformerDoesNotExistKernel::init();
     }
 
     public function testTransformerDoesNotExtendTransformer(): void
     {
         $this->expectException(InvalidTransformerClassException::class);
 
-        TransformerDoesNotExtendTransformerKernel::init(cacheDir: Util::CACHE_DIR);
+        TransformerDoesNotExtendTransformerKernel::init();
     }
 }

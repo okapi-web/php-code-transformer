@@ -19,7 +19,7 @@ class AddedTransformer1 extends Transformer
 
     public function transform(Code $code): void
     {
-        $sourceFileNode = $code->sourceFileNode;
+        $sourceFileNode = $code->getSourceFileNode();
 
         foreach ($sourceFileNode->getDescendantNodes() as $node) {
             if ($node instanceof ExpressionStatement) {

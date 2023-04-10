@@ -2,8 +2,8 @@
 
 namespace Okapi\CodeTransformer\Service;
 
+use Okapi\CodeTransformer\Service\Processor\TransformerProcessor;
 use Okapi\CodeTransformer\Service\StreamFilter\Metadata;
-use Okapi\Singleton\Singleton;
 use php_user_filter as PhpStreamFilter;
 
 /**
@@ -13,8 +13,6 @@ use php_user_filter as PhpStreamFilter;
  */
 class StreamFilter extends PhpStreamFilter implements ServiceInterface
 {
-    use Singleton;
-
     /**
      * Filter ID.
      */
@@ -32,15 +30,10 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
      *
      * @return void
      */
-    public static function register(): void
+    public function register(): void
     {
-        $instance = self::getInstance();
-        $instance->ensureNotInitialized();
-
         // Register the stream filter
-        stream_filter_register(self::FILTER_ID, self::class);
-
-        $instance->setInitialized();
+        stream_filter_register(static::FILTER_ID, static::class);
     }
 
     /**
@@ -53,7 +46,7 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
      *
      * @return int
      *
-     * @see https://www.php.net/manual/php-user-filter.filter.php
+     * @see          https://www.php.net/manual/php-user-filter.filter.php
      */
     public function filter($in, $out, &$consumed, bool $closing): int
     {
@@ -67,10 +60,14 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
             $consumed = strlen($this->data);
 
             // Store the metadata
-            $metadata = new Metadata($this->stream, $this->data);
+            $metadata = DI::make(Metadata::class, [
+                'stream'         => $this->stream,
+                'originalSource' => $this->data,
+            ]);
 
             // Transform the code
-            TransformerContainer::transform($metadata);
+            $transformerProcessor = DI::get(TransformerProcessor::class);
+            $transformerProcessor->transform($metadata);
 
             // Set the new source code
             $source = $metadata->code->getNewSource();

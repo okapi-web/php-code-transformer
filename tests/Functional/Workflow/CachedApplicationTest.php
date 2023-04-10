@@ -20,7 +20,7 @@ class CachedApplicationTest extends TestCase
     public function testKernel(): void
     {
         $this->assertFalse(CachedKernel::isInitialized());
-        CachedKernel::init(cacheDir: Util::CACHE_DIR);
+        CachedKernel::init();
         $this->assertTrue(CachedKernel::isInitialized());
 
         $this->assertFileExists(Util::CACHE_STATES_FILE);

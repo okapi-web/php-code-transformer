@@ -25,7 +25,7 @@ class SyntaxError extends TransformerException
         ?SyntaxError $previous = null
     ) {
         parent::__construct(
-            "Syntax error in transformed code: $diagnostic->message\n\nFull code:\n$code",
+            "Syntax error in transformed code: $diagnostic->message\n\nFull code:\n```php\n$code\n```",
             previous: $previous,
         );
     }

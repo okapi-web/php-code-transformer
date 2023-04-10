@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer\Tests\Functional\Workflow;
 
 use Okapi\CodeTransformer\Exception\Transformer\SyntaxError;
 use Okapi\CodeTransformer\Service\CacheStateManager;
+use Okapi\CodeTransformer\Service\DI;
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform;
 use Okapi\CodeTransformer\Tests\Stubs\Kernel\ApplicationKernel;
@@ -26,7 +27,7 @@ class ApplicationTest extends TestCase
         Util::clearCache();
 
         $this->assertFalse(ApplicationKernel::isInitialized());
-        ApplicationKernel::init(cacheDir: Util::CACHE_DIR);
+        ApplicationKernel::init();
         $this->assertTrue(ApplicationKernel::isInitialized());
 
         $this->assertFileDoesNotExist(Util::CACHE_STATES_FILE);
@@ -121,7 +122,7 @@ class ApplicationTest extends TestCase
 
     public function testDestructor(): void
     {
-        $cacheStateManager = CacheStateManager::getInstance();
+        $cacheStateManager = DI::get(CacheStateManager::class);
 
         $this->assertFileDoesNotExist(Util::CACHE_STATES_FILE);
         $cacheStateManager->__destruct();

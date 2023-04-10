@@ -2,13 +2,17 @@
 
 namespace Okapi\CodeTransformer\Service\StreamFilter\Metadata;
 
-use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\Node\SourceFileNode;
-use Microsoft\PhpParser\Node\Statement\ClassDeclaration;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
-use Okapi\CodeTransformer\Exception\Transformer\SyntaxError;
+use Okapi\CodeTransformer\Service\AutoloadInterceptor;
+use Okapi\CodeTransformer\Service\DI;
+use Okapi\CodeTransformer\Util\CodeChecker;
 use Okapi\CodeTransformer\Util\StringMutator;
+use Roave\BetterReflection\BetterReflection;
+use Roave\BetterReflection\Reflection\ReflectionClass;
+use Roave\BetterReflection\Reflector\DefaultReflector;
+use Roave\BetterReflection\SourceLocator\Type\ComposerSourceLocator;
 
 /**
  * # Code
@@ -37,20 +41,25 @@ class Code
      *
      * @var SourceFileNode
      */
-    public SourceFileNode $sourceFileNode;
+    private SourceFileNode $sourceFileNode;
 
     /**
      * Code constructor.
      *
-     * @param string $source The source code.
+     * @param string $source          The source code.
+     * @param string $namespacedClass The namespaced class name.
      */
     public function __construct(
         private readonly string $source,
+        private readonly string $namespacedClass,
     ) {
-        $parser               = new Parser;
-        $this->sourceFileNode = $parser->parseSourceFile($this->source);
-        $this->stringMutator  = new StringMutator($this->source);
+        // Create the string mutator
+        $this->stringMutator = DI::make(StringMutator::class, [
+            'string' => $this->source,
+        ]);
     }
+
+    // region Mutators
 
     /**
      * Add an edit to the source code.
@@ -102,6 +111,10 @@ class Code
         $this->appendList[] = $string;
     }
 
+    // endregion
+
+    // region Getters
+
     /**
      * Get the original source code.
      *
@@ -113,11 +126,43 @@ class Code
     }
 
     /**
+     * Get source file node.
+     *
+     * @return SourceFileNode
+     */
+    public function getSourceFileNode(): SourceFileNode
+    {
+        if (!isset($this->sourceFileNode)) {
+            $this->sourceFileNode = (new Parser)->parseSourceFile($this->source);
+        }
+
+        return $this->sourceFileNode;
+    }
+
+    /**
+     * Get the reflection class.
+     *
+     * @return ReflectionClass
+     */
+    public function getReflectionClass(): ReflectionClass
+    {
+        static $classLoader, $astLocator, $reflector;
+
+        if (!isset($classLoader, $astLocator, $reflector)) {
+            $classLoader = DI::get(AutoloadInterceptor::DI);
+            $astLocator  = (new BetterReflection)->astLocator();
+            $reflector   = (new DefaultReflector(
+                new ComposerSourceLocator($classLoader, $astLocator)
+            ));
+        }
+
+        return $reflector->reflectClass($this->getNamespacedClass());
+    }
+
+    /**
      * Get the new source code with all edits and appends applied.
      *
      * @return string
-     *
-     * @internal
      */
     public function getNewSource(): string
     {
@@ -138,24 +183,12 @@ class Code
         }
 
         // Check the new source code for syntax errors
-        $parser         = new Parser;
-        $sourceFileNode = $parser->parseSourceFile($newSource);
-        $errors         = DiagnosticsProvider::getDiagnostics($sourceFileNode);
-
-        if (count($errors) > 0) {
-            $errors = array_reverse($errors);
-
-            // Chain errors
-            $error = null;
-            foreach ($errors as $e) {
-                $error = new SyntaxError($e, $newSource, $error);
-            }
-
-            throw $error;
-        }
+        DI::get(CodeChecker::class)->isValidPhpCode($newSource);
 
         return $newSource;
     }
+
+    // endregion
 
     /**
      * Whether the source code has any edits or appends.
@@ -164,19 +197,30 @@ class Code
      */
     public function hasChanges(): bool
     {
-        return count($this->stringMutator->edits) > 0 || count($this->appendList) > 0;
+        return count($this->stringMutator->edits) > 0
+            || count($this->appendList) > 0;
     }
 
     /**
-     * Get the full class name.
+     * Get the namespaced class name.
      *
      * @return string
      */
-    public function getFullClassName(): string
+    public function getNamespacedClass(): string
     {
-        /** @var ClassDeclaration $classDeclaration */
-        $classDeclaration = $this->sourceFileNode->getFirstDescendantNode(ClassDeclaration::class);
+        return $this->namespacedClass;
+    }
 
-        return $classDeclaration->getNamespacedName()->getFullyQualifiedNameText();
+    /**
+     * Get the class name.
+     *
+     * @return string
+     */
+    public function getClassName(): string
+    {
+        return substr(
+            $this->namespacedClass,
+            strrpos($this->namespacedClass, '\\') + 1,
+        );
     }
 }

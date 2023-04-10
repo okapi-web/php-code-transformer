@@ -32,7 +32,7 @@ abstract class Transformer
     /**
      * Transform the source code.
      *
-     * @param Code $code
+     * @param Code          $code
      *
      * @return void
      */

@@ -14,5 +14,5 @@ interface ServiceInterface
      *
      * @return void
      */
-    public static function register(): void;
+    public function register(): void;
 }

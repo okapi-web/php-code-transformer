@@ -31,12 +31,12 @@ class FilterInjector
      *
      * @return string
      */
-    public static function rewrite(string $filePath): string
+    public function rewrite(string $filePath): string
     {
         // Create a filter for the given file
         return sprintf(
             "%s%s/resource=%s",
-            self::PHP_FILTER_READ,
+            static::PHP_FILTER_READ,
             StreamFilter::FILTER_ID,
             $filePath
         );

@@ -1,11 +1,11 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Service;
 
+use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Service\Cache\CachePaths;
 use Okapi\CodeTransformer\Service\Cache\CacheState;
 use Okapi\Filesystem\Filesystem;
-use Okapi\Singleton\Singleton;
 
 /**
  * # Cache State Manager
@@ -22,8 +22,6 @@ use Okapi\Singleton\Singleton;
  */
 class CacheStateManager implements ServiceInterface
 {
-    use Singleton;
-
     /**
      * Application directory keyword.
      */
@@ -45,8 +43,20 @@ class CacheStateManager implements ServiceInterface
      * Whether the cache state has changed.
      *
      * @var bool
+     *
+     * @todo Implement this
      */
     private bool $cacheStateChanged = false;
+
+    // region DI
+
+    #[Inject]
+    private Options $options;
+
+    #[Inject]
+    private CachePaths $cachePaths;
+
+    // endregion
 
     // region Initialization
 
@@ -55,15 +65,10 @@ class CacheStateManager implements ServiceInterface
      *
      * @return void
      */
-    public static function register(): void
+    public function register(): void
     {
-        $instance = self::getInstance();
-        $instance->ensureNotInitialized();
-
-        $instance->initializeCacheDirectory();
-        $instance->loadCacheState();
-
-        $instance->setInitialized();
+        $this->initializeCacheDirectory();
+        $this->loadCacheState();
     }
 
     /**
@@ -73,7 +78,10 @@ class CacheStateManager implements ServiceInterface
      */
     private function initializeCacheDirectory(): void
     {
-        Filesystem::mkdir(Options::$cacheDir, Options::$cacheFileMode);
+        Filesystem::mkdir(
+            $this->options->getCacheDir(),
+            $this->options->getCacheFileMode(),
+        );
     }
 
     /**
@@ -83,7 +91,7 @@ class CacheStateManager implements ServiceInterface
      */
     private function loadCacheState(): void
     {
-        $cacheFilePath = CachePaths::getCacheFilePath();
+        $cacheFilePath = $this->cachePaths->getCacheFilePath();
 
         if (!file_exists($cacheFilePath)) {
             return;
@@ -92,10 +100,13 @@ class CacheStateManager implements ServiceInterface
         // Read file
         $cacheStateContent = Filesystem::readFile($cacheFilePath);
 
+        $appDir   = $this->options->getAppDir();
+        $cacheDir = $this->options->getCacheDir();
+
         // Replace the keywords
         $cacheStateContent = str_replace(
-            [self::CODE_TRANSFORMER_APP_DIR, self::CODE_TRANSFORMER_CACHE_DIR],
-            [addslashes(Options::$appDir), addslashes(Options::$cacheDir)],
+            [static::CODE_TRANSFORMER_APP_DIR, static::CODE_TRANSFORMER_CACHE_DIR],
+            [addslashes($appDir), addslashes($cacheDir)],
             $cacheStateContent,
         );
 
@@ -120,13 +131,13 @@ class CacheStateManager implements ServiceInterface
         array_walk(
             $cacheState,
             function (&$cacheStateItem, $originalFilePath) {
-                $cacheStateItem = new CacheState(
-                    originalFilePath:     $originalFilePath,
-                    className:            $cacheStateItem['className'],
-                    cachedFilePath:       $cacheStateItem['cachedFilePath'],
-                    transformedTime:      $cacheStateItem['transformedTime'],
-                    transformerFilePaths: $cacheStateItem['transformerFilePaths']
-                );
+                $cacheStateItem = DI::make(CacheState::class, [
+                    'originalFilePath'     => $originalFilePath,
+                    'className'            => $cacheStateItem['className'],
+                    'cachedFilePath'       => $cacheStateItem['cachedFilePath'],
+                    'transformedTime'      => $cacheStateItem['transformedTime'],
+                    'transformerFilePaths' => $cacheStateItem['transformerFilePaths'],
+                ]);
             },
         );
 
@@ -173,16 +184,19 @@ class CacheStateManager implements ServiceInterface
         // Semicolon
         $phpCode .= ';';
 
+        $appDir   = $this->options->getAppDir();
+        $cacheDir = $this->options->getCacheDir();
+
         // Replace the keywords
         $phpCode = str_replace(
-            [addslashes(Options::$appDir), addslashes(Options::$cacheDir)],
-            [self::CODE_TRANSFORMER_APP_DIR, self::CODE_TRANSFORMER_CACHE_DIR],
+            [addslashes($appDir), addslashes($cacheDir)],
+            [static::CODE_TRANSFORMER_APP_DIR, static::CODE_TRANSFORMER_CACHE_DIR],
             $phpCode,
         );
 
         // Write file
         Filesystem::writeFile(
-            CachePaths::getCacheFilePath(),
+            $this->cachePaths->getCacheFilePath(),
             $phpCode,
         );
     }
@@ -196,12 +210,9 @@ class CacheStateManager implements ServiceInterface
      *
      * @return ?CacheState
      */
-    public static function queryCacheState(string $filePath): ?CacheState
+    public function queryCacheState(string $filePath): ?CacheState
     {
-        $instance = self::getInstance();
-        $instance->ensureInitialized();
-
-        return $instance->cacheState[$filePath] ?? null;
+        return $this->cacheState[$filePath] ?? null;
     }
 
     /**
@@ -212,15 +223,12 @@ class CacheStateManager implements ServiceInterface
      *
      * @return void
      */
-    public static function setCacheState(
+    public function setCacheState(
         string     $filePath,
         CacheState $cacheState,
     ): void {
-        $instance = self::getInstance();
-        $instance->ensureInitialized();
+        $this->cacheStateChanged = true;
 
-        $instance->cacheStateChanged = true;
-
-        $instance->cacheState[$filePath] = $cacheState;
+        $this->cacheState[$filePath] = $cacheState;
     }
 }
