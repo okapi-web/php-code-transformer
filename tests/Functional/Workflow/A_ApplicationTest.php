@@ -2,9 +2,9 @@
 
 namespace Okapi\CodeTransformer\Tests\Functional\Workflow;
 
-use Okapi\CodeTransformer\Exception\Transformer\SyntaxError;
-use Okapi\CodeTransformer\Service\CacheStateManager;
-use Okapi\CodeTransformer\Service\DI;
+use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\Exception\Transformer\SyntaxError;
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform;
 use Okapi\CodeTransformer\Tests\Stubs\Kernel\ApplicationKernel;
@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 #[RunClassInSeparateProcess]
-class ApplicationTest extends TestCase
+class A_ApplicationTest extends TestCase
 {
     use ClassLoaderMockTrait;
 
@@ -44,7 +44,7 @@ class ApplicationTest extends TestCase
         $stringClass = new $class();
         $this->assertSame('Hello from Code Transformer!', $stringClass->test());
 
-        $file = __DIR__ . '/../../Stubs/ClassesToTransform/StringClass.php';
+        $file    = __DIR__ . '/../../Stubs/ClassesToTransform/StringClass.php';
         $content = Filesystem::readFile($file);
 
         $this->assertEquals($content, StringTransformer::$originalSourceCode);
@@ -78,9 +78,26 @@ class ApplicationTest extends TestCase
         $class = ClassesToTransform\ChangedClass::class;
         $this->assertWillBeTransformed($class);
 
-        /** @noinspection PhpUnusedLocalVariableInspection */
         $changedClass = new $class();
-        $this->assertSame('Hello from Code Transformer!', $changedClass->test());
+        $this->assertSame(
+            'Hello World from Code Transformer!',
+            $changedClass->test(),
+        );
+    }
+
+    /**
+     * Cached test in {@see CachedApplicationTest::testChangedTransformer()}
+     */
+    public function testChangedTransformer(): void
+    {
+        $class = ClassesToTransform\ChangedTransformer::class;
+        $this->assertWillBeTransformed($class);
+
+        $changedTransformer = new $class();
+        $this->assertSame(
+            'Hello World from Code Transformer!',
+            $changedTransformer->test(),
+        );
     }
 
     /**
@@ -104,6 +121,7 @@ class ApplicationTest extends TestCase
         $this->assertWillBeTransformed($class);
 
         $multipleTransformersClass = new $class();
+
         $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
         $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
     }
@@ -133,15 +151,5 @@ class ApplicationTest extends TestCase
         $key = 'CODE_TRANSFORMER_APP_DIR\tests\Stubs\ClassesToTransform\StringClass.php';
         $key = str_replace('\\', DIRECTORY_SEPARATOR, $key);
         $this->assertArrayHasKey($key, $file);
-
-        $cachedFilePath = 'CODE_TRANSFORMER_APP_DIR\tests\cache\transformed\tests\Stubs\ClassesToTransform\StringClass.php';
-        $cachedFilePath = str_replace('\\', DIRECTORY_SEPARATOR, $cachedFilePath);
-        $this->assertArrayHasKey('cachedFilePath', $file[$key]);
-        $this->assertEquals($cachedFilePath, $file[$key]['cachedFilePath']);
-        $this->assertArrayHasKey('transformedTime', $file[$key]);
-        $this->assertIsInt($file[$key]['transformedTime']);
-        $this->assertArrayHasKey('transformerFilePaths', $file[$key]);
-        $this->assertIsArray($file[$key]['transformerFilePaths']);
-        $this->assertGreaterThan(0, count($file[$key]['transformerFilePaths']));
     }
 }

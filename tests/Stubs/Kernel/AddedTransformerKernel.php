@@ -4,7 +4,7 @@ namespace Okapi\CodeTransformer\Tests\Stubs\Kernel;
 
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\AddedTransformer2;
 
-class CachedKernel extends ApplicationKernel
+class AddedTransformerKernel extends ApplicationKernel
 {
     protected array $addedTransformers = [
         AddedTransformer2::class,

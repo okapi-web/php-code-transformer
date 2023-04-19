@@ -3,10 +3,10 @@
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
 use Microsoft\PhpParser\Node\StringLiteral;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\MultipleTransformersClass;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\StringClass;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 class StringTransformer extends Transformer
 {

@@ -4,7 +4,8 @@ namespace Okapi\CodeTransformer\Tests\Stubs\Kernel;
 
 use Okapi\CodeTransformer\CodeTransformerKernel;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\AddedTransformer1;
-use Okapi\CodeTransformer\Tests\Stubs\Transformer\ChangedTransformer;
+use Okapi\CodeTransformer\Tests\Stubs\Transformer\ChangedClassTransformer;
+use Okapi\CodeTransformer\Tests\Stubs\Transformer\ChangedTransformerTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\DeleteCacheFileTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\NoChangesTransformer;
 use Okapi\CodeTransformer\Tests\Stubs\Transformer\StringTransformer;
@@ -20,7 +21,8 @@ class ApplicationKernel extends CodeTransformerKernel
         StringTransformer::class,
         NoChangesTransformer::class,
         SyntaxErrorTransformer::class,
-        ChangedTransformer::class,
+        ChangedClassTransformer::class,
+        ChangedTransformerTransformer::class,
         DeleteCacheFileTransformer::class,
         UnPrivateTransformer::class,
         AddedTransformer1::class,

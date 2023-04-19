@@ -1,14 +1,14 @@
 <?php
-
+/** @noinspection PhpUnhandledExceptionInspection */
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
 use Microsoft\PhpParser\Node\Expression\AssignmentExpression;
 use Microsoft\PhpParser\Node\Expression\Variable;
 use Microsoft\PhpParser\Node\Statement\ExpressionStatement;
 use Microsoft\PhpParser\Node\StringLiteral;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\AddedTransformerClass;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 class AddedTransformer1 extends Transformer
 {

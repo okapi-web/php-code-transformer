@@ -4,24 +4,70 @@ namespace Okapi\CodeTransformer\Tests\Functional\Workflow;
 
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform;
-use Okapi\CodeTransformer\Tests\Stubs\Kernel\CachedKernel;
+use Okapi\CodeTransformer\Tests\Stubs\Kernel\ApplicationKernel;
 use Okapi\CodeTransformer\Tests\Util;
 use Okapi\Filesystem\Filesystem;
+use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 
 /**
  * This test has to be run after ApplicationTest.
  */
-class CachedApplicationTest extends TestCase
+#[RunClassInSeparateProcess]
+class B_CachedApplicationTest extends TestCase
 {
     use ClassLoaderMockTrait;
 
+    private static string $classFileContent;
+    private static string $transformerFileContent;
+
+    public static function setUpBeforeClass(): void
+    {
+        // Change files
+
+        $classFilePath = __DIR__ . '/../../Stubs/ClassesToTransform/ChangedClass.php';
+        self::$classFileContent = Filesystem::readFile($classFilePath);
+
+        $changedFileContent = str_replace(
+            'Hello World!',
+            'Hello Changed World!',
+            self::$classFileContent,
+        );
+
+        usleep(500 * 1000);
+        Filesystem::writeFile($classFilePath, $changedFileContent);
+
+
+
+        $transformerFilePath = __DIR__ . '/../../Stubs/Transformer/ChangedTransformerTransformer.php';
+        self::$transformerFileContent = Filesystem::readFile($transformerFilePath);
+
+        $changedFileContent = str_replace(
+            'Hello World from Code Transformer!',
+            'Hello Changed World from Code Transformer!',
+            self::$transformerFileContent,
+        );
+
+        usleep(500 * 1000);
+        Filesystem::writeFile($transformerFilePath, $changedFileContent);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        // Restore files
+
+        $classFilePath = __DIR__ . '/../../Stubs/ClassesToTransform/ChangedClass.php';
+        Filesystem::writeFile($classFilePath, self::$classFileContent);
+
+        $transformerFilePath = __DIR__ . '/../../Stubs/Transformer/ChangedTransformerTransformer.php';
+        Filesystem::writeFile($transformerFilePath, self::$transformerFileContent);
+    }
+
     public function testKernel(): void
     {
-        $this->assertFalse(CachedKernel::isInitialized());
-        CachedKernel::init();
-        $this->assertTrue(CachedKernel::isInitialized());
+        $this->assertFalse(ApplicationKernel::isInitialized());
+        ApplicationKernel::init();
+        $this->assertTrue(ApplicationKernel::isInitialized());
 
         $this->assertFileExists(Util::CACHE_STATES_FILE);
     }
@@ -61,7 +107,7 @@ class CachedApplicationTest extends TestCase
         $stringClass = new $class();
 
         $originalFilePath = __DIR__ . '/../../Stubs/ClassesToTransform/NoChangesClass.php';
-        $cachedFilePath = Util::CACHE_DIR . '/transformed/tests/Stubs/ClassesToTransform/NoChangesClass.php';
+        $cachedFilePath   = Util::CACHE_DIR . '/transformed/tests/Stubs/ClassesToTransform/NoChangesClass.php';
         $this->assertFileExists($originalFilePath);
         $this->assertFileDoesNotExist($cachedFilePath);
     }
@@ -71,35 +117,29 @@ class CachedApplicationTest extends TestCase
      */
     public function testChangedClass(): void
     {
-        $originalFilePath = __DIR__ . '/../../Stubs/ClassesToTransform/ChangedClass.php';
+        $class = ClassesToTransform\ChangedClass::class;
+        $this->assertWillBeTransformed($class);
 
-        $originalFileContent = Filesystem::readFile($originalFilePath);
+        $changedClass = new $class();
+        $this->assertSame(
+            'Hello Changed World from Code Transformer!',
+            $changedClass->test(),
+        );
+    }
 
-        $exception = null;
-        try {
-            $changedFileContent = str_replace(
-                'Hello World!',
-                'Hello Changed World!',
-                $originalFileContent,
-            );
+    /**
+     * Cached by {@see ApplicationTest::testChangedTransformer()}
+     */
+    public function testChangedTransformer(): void
+    {
+        $class = ClassesToTransform\ChangedTransformer::class;
+        $this->assertWillBeTransformed($class);
 
-            Filesystem::writeFile($originalFilePath, $changedFileContent);
-
-            $class = ClassesToTransform\ChangedClass::class;
-            $this->assertWillBeTransformed($class);
-
-            $changedClass = new $class();
-            $this->assertSame('Hello Changed World from Code Transformer!', $changedClass->test());
-        } catch (Throwable $e) {
-            $exception = $e;
-        }
-
-        Filesystem::writeFile($originalFilePath, $originalFileContent);
-
-        if ($exception !== null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            throw $exception;
-        }
+        $classInstance = new $class;
+        $this->assertSame(
+            'Hello Changed World from Code Transformer!',
+            $classInstance->test(),
+        );
     }
 
     /**
@@ -133,24 +173,5 @@ class CachedApplicationTest extends TestCase
         $multipleTransformersClass = new $class();
         $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
         $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
-    }
-
-    /**
-     * Cached by {@see ApplicationTest::testAddedTransformer()}
-     */
-    public function testAddedTransformer(): void
-    {
-        $class = ClassesToTransform\AddedTransformerClass::class;
-        $this->assertWillBeTransformed($class);
-
-        $addedTransformerClass = new $class();
-        $this->assertSame('Hello from Code Transformer!', $addedTransformerClass->test());
-    }
-
-    public function testClearCache(): void
-    {
-        Util::clearCache();
-
-        $this->expectNotToPerformAssertions();
     }
 }

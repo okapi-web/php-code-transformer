@@ -3,15 +3,15 @@
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
 use Microsoft\PhpParser\Node\StringLiteral;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
-use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\ChangedClass;
+use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\ChangedTransformer;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
-class ChangedTransformer extends Transformer
+class ChangedTransformerTransformer extends Transformer
 {
     public function getTargetClass(): string|array
     {
-        return ChangedClass::class;
+        return ChangedTransformer::class;
     }
 
     public function transform(Code $code): void
@@ -22,19 +22,19 @@ class ChangedTransformer extends Transformer
             // Find 'Hello World!' string
             if ($node instanceof StringLiteral) {
                 if ($node->getStringContentsText() === 'Hello World!') {
-                    // Replace it with 'Hello from Code Transformer!'
-                    $code->edit(
-                        $node->children,
-                        "'Hello from Code Transformer!'",
-                    );
-                } else if ($node->getStringContentsText() === 'Hello Changed World!') {
                     // Replace it with 'Hello Changed World from Code Transformer!'
                     $code->edit(
                         $node->children,
-                        "'Hello Changed World from Code Transformer!'",
+                        "'Hello World from Code Transformer!'",
                     );
                 }
             }
         }
+
+        $reflection = $code->getReflectionClass();
+        assert($reflection->getName() === ChangedTransformer::class);
+
+        $className = $code->getClassName();
+        assert($className === 'ChangedTransformer');
     }
 }
