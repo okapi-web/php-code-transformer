@@ -1,16 +1,17 @@
 <?php
 /** @noinspection PhpPropertyOnlyWrittenInspection */
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core\Cache;
 
 use DI\Attribute\Inject;
-use Okapi\CodeTransformer\Service\Cache\CachePaths;
-use Okapi\CodeTransformer\Service\Cache\CacheState;
+use Okapi\CodeTransformer\Core\Container\TransformerManager;
+use Okapi\CodeTransformer\Core\Options;
+use Okapi\CodeTransformer\Core\ServiceInterface;
 use Okapi\Filesystem\Filesystem;
 
 /**
  * # Cache State Manager
  *
- * The `CacheStateManager` class is used to manage the cache state.
+ * This class is used to manage the cache state.
  *
  * 1. It creates the cache directory if it does not exist.
  * 2. It loads cached metadata into the {@link $cacheState} array.
@@ -22,6 +23,22 @@ use Okapi\Filesystem\Filesystem;
  */
 class CacheStateManager implements ServiceInterface
 {
+    // region DI
+
+    #[Inject]
+    private Options $options;
+
+    #[Inject]
+    private CachePaths $cachePaths;
+
+    #[Inject]
+    private CacheStateFactory $cacheStateFactory;
+
+    #[Inject]
+    private TransformerManager $transformerManager;
+
+    // endregion
+
     /**
      * Application directory keyword.
      */
@@ -33,30 +50,16 @@ class CacheStateManager implements ServiceInterface
     public const CODE_TRANSFORMER_CACHE_DIR = 'CODE_TRANSFORMER_CACHE_DIR';
 
     /**
-     * Cached metadata for the transformation state of a file.
-     *
-     * @var array<string, CacheState>
+     * The hash keyword.
      */
-    public array $cacheState = [];
+    public const HASH = 'hash';
 
     /**
-     * Whether the cache state has changed.
+     * Cached metadata for the transformation state of a file.
      *
-     * @var bool
-     *
-     * @todo Implement this
+     * @var array<string, CacheState> The key is the original file path.
      */
-    private bool $cacheStateChanged = false;
-
-    // region DI
-
-    #[Inject]
-    private Options $options;
-
-    #[Inject]
-    private CachePaths $cachePaths;
-
-    // endregion
+    public array $cacheState = [];
 
     // region Initialization
 
@@ -68,6 +71,7 @@ class CacheStateManager implements ServiceInterface
     public function register(): void
     {
         $this->initializeCacheDirectory();
+
         $this->loadCacheState();
     }
 
@@ -98,50 +102,38 @@ class CacheStateManager implements ServiceInterface
         }
 
         // Read file
-        $cacheStateContent = Filesystem::readFile($cacheFilePath);
+        $cacheFileContent = Filesystem::readFile($cacheFilePath);
 
         $appDir   = $this->options->getAppDir();
         $cacheDir = $this->options->getCacheDir();
 
         // Replace the keywords
-        $cacheStateContent = str_replace(
+        $cacheFileContent = str_replace(
             [static::CODE_TRANSFORMER_APP_DIR, static::CODE_TRANSFORMER_CACHE_DIR],
             [addslashes($appDir), addslashes($cacheDir)],
-            $cacheStateContent,
+            $cacheFileContent,
         );
 
         // Remove the opening PHP tag
-        $cacheStateContent = preg_replace('/^<\?php/', '', $cacheStateContent);
+        $cacheFileContent = preg_replace('/^<\?php/', '', $cacheFileContent);
 
         // Unserialize
-        $cacheState = eval($cacheStateContent);
+        $cacheStatesArray = eval($cacheFileContent);
 
-        // Filter out invalid items
-        $cacheState = array_filter(
-            $cacheState,
-            function ($cacheStateItem) {
-                return key_exists('className', $cacheStateItem)
-                    && key_exists('cachedFilePath', $cacheStateItem)
-                    && key_exists('transformedTime', $cacheStateItem)
-                    && key_exists('transformerFilePaths', $cacheStateItem);
-            },
-        );
+        // Check the hash
+        $transformers = $this->transformerManager->getTransformers();
+        $hash         = md5(serialize($transformers));
+        if (!isset($cacheStatesArray[static::HASH])
+            || $cacheStatesArray[static::HASH] !== $hash
+        ) {
+            return;
+        }
+        unset($cacheStatesArray[static::HASH]);
 
-        // Convert to array of CacheState objects
-        array_walk(
-            $cacheState,
-            function (&$cacheStateItem, $originalFilePath) {
-                $cacheStateItem = DI::make(CacheState::class, [
-                    'originalFilePath'     => $originalFilePath,
-                    'className'            => $cacheStateItem['className'],
-                    'cachedFilePath'       => $cacheStateItem['cachedFilePath'],
-                    'transformedTime'      => $cacheStateItem['transformedTime'],
-                    'transformerFilePaths' => $cacheStateItem['transformerFilePaths'],
-                ]);
-            },
-        );
+        // Create the cache state
+        $cacheStates = $this->cacheStateFactory->createCacheStates($cacheStatesArray);
 
-        $this->cacheState = $cacheState;
+        $this->cacheState = $cacheStates;
     }
 
     // endregion
@@ -172,14 +164,18 @@ class CacheStateManager implements ServiceInterface
         // Opening PHP tag
         $phpCode = "<?php\n\nreturn ";
 
-        // Serialize the cache state
-        $phpCode .= var_export(
-            array_map(
-                fn (CacheState $cacheState) => $cacheState->toArray(),
-                $this->cacheState,
-            ),
-            true,
+        // Create the cache state array
+        $cacheStateArray = array_map(
+            fn (CacheState $cacheState) => $cacheState->toArray(),
+            $this->cacheState,
         );
+
+        // Set the hash
+        $transformers                  = $this->transformerManager->getTransformers();
+        $cacheStateArray[static::HASH] = md5(serialize($transformers));
+
+        // Serialize the cache state
+        $phpCode .= var_export($cacheStateArray, true);
 
         // Semicolon
         $phpCode .= ';';
@@ -227,8 +223,6 @@ class CacheStateManager implements ServiceInterface
         string     $filePath,
         CacheState $cacheState,
     ): void {
-        $this->cacheStateChanged = true;
-
         $this->cacheState[$filePath] = $cacheState;
     }
 }
