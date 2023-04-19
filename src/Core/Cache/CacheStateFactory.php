@@ -2,14 +2,17 @@
 
 namespace Okapi\CodeTransformer\Core\Cache;
 
-
 use Okapi\CodeTransformer\Core\Cache\CacheState\EmptyResultCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\NoTransformationsCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\TransformedCacheState;
 use Okapi\CodeTransformer\Core\DI;
 use TypeError;
 
-// TODO: docs
+/**
+ * # Cache State Factory
+ *
+ * This class is used to create cache states from the cache state file.
+ */
 class CacheStateFactory
 {
     /**

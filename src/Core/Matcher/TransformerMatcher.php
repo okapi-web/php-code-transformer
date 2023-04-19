@@ -11,7 +11,11 @@ use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Transformer;
 use Okapi\Wildcards\Regex;
 
-// TODO: docs
+/**
+ * # Transformer Matcher
+ *
+ * This class is used to match the transformers to the classes.
+ */
 class TransformerMatcher
 {
     // region DI

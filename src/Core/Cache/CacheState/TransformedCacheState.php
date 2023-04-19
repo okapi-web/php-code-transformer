@@ -2,10 +2,13 @@
 
 namespace Okapi\CodeTransformer\Core\Cache\CacheState;
 
-
 use Okapi\CodeTransformer\Core\Cache\CacheState;
 
-// TODO: docs
+/**
+ * # Transformed Cache State
+ *
+ * This class is used to store the cache state for transformed files.
+ */
 class TransformedCacheState extends CacheState
 {
 

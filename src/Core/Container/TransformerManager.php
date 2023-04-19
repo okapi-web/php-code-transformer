@@ -14,7 +14,6 @@ use Okapi\CodeTransformer\Transformer;
  * # Transformer Manager
  *
  * This class is used to register and manage the transformers.
- * @todo Don't repeat class name in docs
  */
 class TransformerManager implements ServiceInterface
 {
@@ -22,7 +21,6 @@ class TransformerManager implements ServiceInterface
      * The list of transformer class strings.
      *
      * @var class-string<Transformer>[]
-     * @todo CHECK if all class-string have a type
      */
     private array $transformers = [];
 

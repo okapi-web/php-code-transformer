@@ -4,7 +4,11 @@ namespace Okapi\CodeTransformer\Core\Container;
 
 use Okapi\CodeTransformer\Transformer;
 
-// TODO: docs
+/**
+ * # Transformer Container
+ *
+ * This class is used to store the transformer instances.
+ */
 class TransformerContainer
 {
     /**
