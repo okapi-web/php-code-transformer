@@ -1,10 +1,10 @@
 <?php
 
-namespace Okapi\CodeTransformer\Util;
+namespace Okapi\CodeTransformer\Core\Util;
 
 use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\Parser;
-use Okapi\CodeTransformer\Exception\Transformer\SyntaxError;
+use Okapi\CodeTransformer\Core\Exception\Transformer\SyntaxError;
 
 class CodeChecker
 {

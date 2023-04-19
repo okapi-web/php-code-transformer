@@ -1,6 +1,6 @@
 <?php
 
-namespace Okapi\CodeTransformer\Util;
+namespace Okapi\CodeTransformer\Core\Util;
 
 /**
  * A utility class for mutating strings.
