@@ -1,8 +1,8 @@
 <?php
 
-namespace Okapi\CodeTransformer\Exception\Kernel;
+namespace Okapi\CodeTransformer\Core\Exception\Kernel;
 
-use Okapi\CodeTransformer\Exception\KernelException;
+use Okapi\CodeTransformer\Core\Exception\KernelException;
 
 /**
  * # Initialize Kernel Exception
@@ -18,8 +18,8 @@ class DirectKernelInitializationException extends KernelException
     public function __construct()
     {
         parent::__construct(
-            "Cannot initialize CodeTransformerKernel directly. " .
-            "Please extend from CodeTransformerKernel and call the init() method.",
+            'Cannot initialize CodeTransformerKernel directly. ' .
+            'Please extend from CodeTransformerKernel and call the init() method.',
         );
     }
 }

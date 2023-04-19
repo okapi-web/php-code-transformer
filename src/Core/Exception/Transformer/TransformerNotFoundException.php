@@ -1,8 +1,8 @@
 <?php
 
-namespace Okapi\CodeTransformer\Exception\Transformer;
+namespace Okapi\CodeTransformer\Core\Exception\Transformer;
 
-use Okapi\CodeTransformer\Exception\TransformerException;
+use Okapi\CodeTransformer\Core\Exception\TransformerException;
 
 /**
  * # Transformer Not Found Exception
@@ -19,7 +19,7 @@ class TransformerNotFoundException extends TransformerException
     public function __construct(string $transformerClass)
     {
         parent::__construct(
-            "Transformer class '$transformerClass' does not exist.",
+            'Transformer class "' . $transformerClass . '" does not exist.',
         );
     }
 }

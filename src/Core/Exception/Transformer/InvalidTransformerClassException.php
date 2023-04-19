@@ -1,14 +1,15 @@
 <?php
 
-namespace Okapi\CodeTransformer\Exception\Transformer;
+namespace Okapi\CodeTransformer\Core\Exception\Transformer;
 
-use Okapi\CodeTransformer\Exception\TransformerException;
+use Okapi\CodeTransformer\Core\Exception\TransformerException;
+use Okapi\CodeTransformer\Transformer;
 
 /**
  * # Invalid Transformer Class Exception
- * 
+ *
  * This exception is thrown when a transformer class does not extend the
- * `Transformer` class.
+ * {@see Transformer} class.
  */
 class InvalidTransformerClassException extends TransformerException
 {
@@ -17,9 +18,10 @@ class InvalidTransformerClassException extends TransformerException
      *
      * @param class-string $transformerClass
      */
-    public function __construct(string $transformerClass) {
+    public function __construct(string $transformerClass)
+    {
         parent::__construct(
-            "Transformer class '$transformerClass' does not extend the Transformer class.",
+            'Transformer class "' . $transformerClass . '" does not extend the Transformer class.',
         );
     }
 }

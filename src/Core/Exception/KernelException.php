@@ -1,6 +1,6 @@
 <?php
 
-namespace Okapi\CodeTransformer\Exception;
+namespace Okapi\CodeTransformer\Core\Exception;
 
 /**
  * # Kernel Exception

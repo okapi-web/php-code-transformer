@@ -1,8 +1,8 @@
 <?php
 
-namespace Okapi\CodeTransformer\Exception\StreamFilter;
+namespace Okapi\CodeTransformer\Core\Exception\StreamFilter;
 
-use Okapi\CodeTransformer\Exception\StreamFilterException;
+use Okapi\CodeTransformer\Core\Exception\StreamFilterException;
 
 /**
  * # Invalid Stream Exception
@@ -19,7 +19,7 @@ class InvalidStreamException extends StreamFilterException
     public function __construct()
     {
         parent::__construct(
-            "The stream must be a valid resource.",
+            'The stream must be a valid resource.',
         );
     }
 }
