@@ -92,8 +92,8 @@ class Kernel extends CodeTransformerKernel
 
 <?php
 
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 // Extend from the "Transformer" class
 class StringTransformer extends Transformer
@@ -155,8 +155,8 @@ class StringTransformer extends Transformer
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
 use Microsoft\PhpParser\TokenKind;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 // Replace all "private" keywords with "public"
 class UnPrivateTransformer extends Transformer
