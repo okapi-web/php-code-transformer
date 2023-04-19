@@ -39,7 +39,10 @@
     "autoload": {
         "psr-4": {
             "Okapi\\CodeTransformer\\": "src/"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
