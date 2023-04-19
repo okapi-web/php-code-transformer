@@ -2,12 +2,12 @@
 
 namespace Okapi\CodeTransformer;
 
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
+use Okapi\CodeTransformer\Transformer\Code;
 
 /**
  * # Code Transformer
  *
- * The `CodeTransformer` class provides a foundation for creating a transformer.
+ * This class provides a foundation for creating a transformer.
  *
  * Transformers extend this class and implement following methods:
  * - `getTargetClass()` - Returns the target class name(s) that this transformer
@@ -24,6 +24,8 @@ abstract class Transformer
 
     /**
      * Get the target class name that this transformer will be applied to.
+     *
+     * Wildcards are supported. See Okapi/Wildcards for more information.
      *
      * @return class-string|class-string[]
      */

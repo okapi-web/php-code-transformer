@@ -6,9 +6,9 @@ use Microsoft\PhpParser\Node\Expression\AssignmentExpression;
 use Microsoft\PhpParser\Node\Expression\Variable;
 use Microsoft\PhpParser\Node\Statement\ExpressionStatement;
 use Microsoft\PhpParser\Node\StringLiteral;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\AddedTransformerClass;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 class AddedTransformer2 extends Transformer
 {
@@ -19,7 +19,7 @@ class AddedTransformer2 extends Transformer
 
     public function transform(Code $code): void
     {
-        $sourceFileNode = $code->sourceFileNode;
+        $sourceFileNode = $code->getSourceFileNode();
 
         foreach ($sourceFileNode->getDescendantNodes() as $node) {
             if ($node instanceof ExpressionStatement) {

@@ -3,8 +3,7 @@
 namespace Okapi\CodeTransformer\Tests\Functional;
 
 use Okapi\CodeTransformer\CodeTransformerKernel;
-use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
-use Okapi\CodeTransformer\Tests\Util;
+use Okapi\CodeTransformer\Core\Exception\Kernel\DirectKernelInitializationException;
 use PHPUnit\Framework\TestCase;
 
 class DirectKernelTest extends TestCase
@@ -13,9 +12,6 @@ class DirectKernelTest extends TestCase
     {
         $this->expectException(DirectKernelInitializationException::class);
 
-        CodeTransformerKernel::init(
-            cacheDir: Util::CACHE_DIR,
-            debug:    true,
-        );
+        CodeTransformerKernel::init();
     }
 }

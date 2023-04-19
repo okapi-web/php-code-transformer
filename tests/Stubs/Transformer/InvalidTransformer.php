@@ -2,8 +2,8 @@
 
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\StringClass;
+use Okapi\CodeTransformer\Transformer\Code;
 
 class InvalidTransformer
 {

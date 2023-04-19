@@ -2,18 +2,20 @@
 
 namespace Okapi\CodeTransformer;
 
-use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
-use Okapi\CodeTransformer\Service\AutoloadInterceptor;
-use Okapi\CodeTransformer\Service\CacheStateManager;
-use Okapi\CodeTransformer\Service\Options;
-use Okapi\CodeTransformer\Service\StreamFilter;
-use Okapi\CodeTransformer\Service\TransformerContainer;
+use DI\Attribute\Inject;
+use Okapi\CodeTransformer\Core\AutoloadInterceptor;
+use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
+use Okapi\CodeTransformer\Core\Container\TransformerManager;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\Exception\Kernel\DirectKernelInitializationException;
+use Okapi\CodeTransformer\Core\Options;
+use Okapi\CodeTransformer\Core\StreamFilter;
 use Okapi\Singleton\Singleton;
 
 /**
  * # Code Transformer Kernel
  *
- * The `CodeTransformerKernel` is the heart of the Code Transformer library.
+ * This class is the heart of the Code Transformer library.
  * It manages an environment for Code Transformation.
  *
  * 1. Extends this class and define a list of transformers in the
@@ -24,6 +26,58 @@ abstract class CodeTransformerKernel
 {
     use Singleton;
 
+    // region DI
+
+    #[Inject]
+    private Options $options;
+
+    #[Inject]
+    protected TransformerManager $transformerContainer;
+
+    #[Inject]
+    private CacheStateManager $cacheStateManager;
+
+    #[Inject]
+    private StreamFilter $streamFilter;
+
+    #[Inject]
+    private AutoloadInterceptor $autoloadInterceptor;
+
+    /**
+     * Make the constructor public to allow the DI container to instantiate the class.
+     */
+    public function __construct() {}
+
+    // endregion
+
+    // region Settings
+
+    /**
+     * The cache directory.
+     * <br><b>Default:</b> ROOT_DIR/cache/code-transformer<br>
+     *
+     * @var string|null
+     */
+    protected ?string $cacheDir = null;
+
+    /**
+     * The cache file mode.
+     * <br><b>Default:</b> 0777 & ~{@link umask()}<br>
+     *
+     * @var int|null
+     */
+    protected ?int $cacheFileMode = null;
+
+    /**
+     * Enable debug mode. This will disable the cache.
+     * <br><b>Default:</b> false<br>
+     *
+     * @var bool
+     */
+    protected bool $debug = false;
+
+    // endregion
+
     /**
      * List of transformers to be applied.
      *
@@ -32,47 +86,67 @@ abstract class CodeTransformerKernel
     protected array $transformers = [];
 
     /**
-     * Initialize the kernel.
+     * Resolve instance with dependency injection.
      *
-     * @param string|null $cacheDir      The cache directory.
-     *                                   <br><b>Default:</b> ROOT_DIR/cache/code-transformer<br>
-     * @param int|null    $cacheFileMode The cache file mode.
-     *                                   <br><b>Default:</b> 0777 & ~{@link umask()}<br>
-     * @param bool|null   $debug         Enable debug mode. This will disable the cache.
-     *                                   <br><b>Default:</b> false<br>
+     * @inheritDoc
+     */
+    public static function getInstance(): static
+    {
+        if (!isset(static::$instance)) {
+            static::registerDependencyInjection();
+
+            static::$instance = DI::get(static::class);
+        }
+
+        return static::$instance;
+    }
+
+    /**
+     * Initialize the kernel.
      *
      * @return void
      */
-    public static function init(
-        ?string $cacheDir,
-        ?int    $cacheFileMode = null,
-        bool    $debug = false,
-    ): void {
-        self::ensureNotKernelNamespace();
+    public static function init(): void
+    {
+        static::ensureNotKernelNamespace();
 
-        $instance = self::getInstance();
+        $instance = static::getInstance();
         $instance->ensureNotInitialized();
 
-        // Only initialize the kernel if there are transformers
-        if ($instance->transformers) {
-            // Pre-initialize the services
-
-            // Set options
-            Options::setOptions(
-                cacheDir:      $cacheDir,
-                cacheFileMode: $cacheFileMode,
-                debug:         $debug,
-            );
-
-            // Add the transformers
-            TransformerContainer::addTransformers($instance->transformers);
-
-            // Register the services
-            $instance->registerServices();
-            $instance->registerAutoloadInterceptor();
-        }
+        // Initialize the services
+        $instance->preInit();
+        $instance->registerServices();
+        $instance->registerAutoloadInterceptor();
 
         $instance->setInitialized();
+    }
+
+    /**
+     * Register the dependency injection.
+     *
+     * @return void
+     */
+    protected static function registerDependencyInjection(): void
+    {
+        DI::getInstance()->register();
+    }
+
+    /**
+     * Pre-initialize the services.
+     *
+     * @return void
+     */
+    protected function preInit(): void
+    {
+        // Set options
+        $this->options->setOptions(
+            cacheDir:      $this->cacheDir,
+            cacheFileMode: $this->cacheFileMode,
+            debug:         $this->debug,
+        );
+
+        // Add the transformers
+        $this->transformerContainer->addTransformers($this->transformers);
     }
 
     /**
@@ -83,16 +157,16 @@ abstract class CodeTransformerKernel
     protected function registerServices(): void
     {
         // Options provider
-        Options::register();
+        $this->options->register();
 
         // Manage the user-defined transformers
-        TransformerContainer::register();
+        $this->transformerContainer->register();
 
         // Cache path manager
-        CacheStateManager::register();
+        $this->cacheStateManager->register();
 
         // Stream filter -> Source transformer
-        StreamFilter::register();
+        $this->streamFilter->register();
     }
 
     /**
@@ -103,7 +177,7 @@ abstract class CodeTransformerKernel
     protected function registerAutoloadInterceptor(): void
     {
         // Overload the composer class loaders
-        AutoloadInterceptor::register();
+        $this->autoloadInterceptor->register();
     }
 
     /**
@@ -111,7 +185,7 @@ abstract class CodeTransformerKernel
      *
      * @return void
      */
-    private static function ensureNotKernelNamespace(): void
+    protected static function ensureNotKernelNamespace(): void
     {
         // Get current namespace and class name
         $namespace = get_called_class();

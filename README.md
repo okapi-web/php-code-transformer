@@ -92,8 +92,8 @@ class Kernel extends CodeTransformerKernel
 
 <?php
 
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 // Extend from the "Transformer" class
 class StringTransformer extends Transformer
@@ -112,12 +112,12 @@ class StringTransformer extends Transformer
     {
         // I recommend using the Microsoft\PhpParser library to parse the source
         // code. It's already included in the dependencies of this package and
-        // the "$code->sourceFileNode" property contains the parsed source code.
+        // the "$code->getSourceFileNode()" property contains the parsed source code.
         
         // But you can also use any other library or manually parse the source
         // code with basic PHP string functions and "$code->getOriginalSource()"
 
-        $sourceFileNode = $code->sourceFileNode;
+        $sourceFileNode = $code->getSourceFileNode();
 
         // Iterate over all nodes
         foreach ($sourceFileNode->getDescendantNodes() as $node) {
@@ -155,8 +155,8 @@ class StringTransformer extends Transformer
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
 use Microsoft\PhpParser\TokenKind;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 // Replace all "private" keywords with "public"
 class UnPrivateTransformer extends Transformer
@@ -168,7 +168,7 @@ class UnPrivateTransformer extends Transformer
 
     public function transform(Code $code): void
     {
-        $sourceFileNode = $code->sourceFileNode;
+        $sourceFileNode = $code->getSourceFileNode();
 
         // Iterate over all tokens
         foreach ($sourceFileNode->getDescendantTokens() as $token) {

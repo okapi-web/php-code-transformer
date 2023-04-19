@@ -2,9 +2,9 @@
 
 namespace Okapi\CodeTransformer\Tests\Stubs\Transformer;
 
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
 use Okapi\CodeTransformer\Tests\Stubs\ClassesToTransform\NoChangesClass;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer\Code;
 
 class NoChangesTransformer extends Transformer
 {

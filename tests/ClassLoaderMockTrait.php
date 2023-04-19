@@ -2,10 +2,11 @@
 
 namespace Okapi\CodeTransformer\Tests;
 
-use Okapi\CodeTransformer\Service\AutoloadInterceptor\ClassLoader;
-use Okapi\CodeTransformer\Service\Cache\CachePaths;
-use Okapi\CodeTransformer\Service\StreamFilter;
-use Okapi\CodeTransformer\Service\StreamFilter\FilterInjector;
+use Okapi\CodeTransformer\Core\AutoloadInterceptor\ClassLoader;
+use Okapi\CodeTransformer\Core\Cache\CachePaths;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\StreamFilter;
+use Okapi\CodeTransformer\Core\StreamFilter\FilterInjector;
 use Okapi\Path\Path;
 use PHPUnit\Framework\Assert;
 use ReflectionProperty;
@@ -29,7 +30,7 @@ trait ClassLoaderMockTrait
             $this->findClassLoader();
         }
 
-        $original = new ReflectionProperty(ClassLoader::class, 'original');
+        $original = new ReflectionProperty(ClassLoader::class, 'originalClassLoader');
         $original = $original->getValue($this->classLoader);
         return $original->findFile($class);
     }
@@ -58,14 +59,15 @@ trait ClassLoaderMockTrait
         Assert::assertEquals(
             $transformPath,
             $filePathMock,
-            $className . ' will not be transformed',
+            "$className will not be transformed",
         );
     }
 
     public function assertTransformerLoadedFromCache(string $className): void
     {
         $filePath = $this->findOriginalClassMock($className);
-        $cachePath = CachePaths::getTransformedCachePath($filePath);
+        $cachePaths = DI::get(CachePaths::class);
+        $cachePath = $cachePaths->getTransformedCachePath($filePath);
         $filePathMock = $this->findClassMock($className);
 
         Assert::assertEquals(
