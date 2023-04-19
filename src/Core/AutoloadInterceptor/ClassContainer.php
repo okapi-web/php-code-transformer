@@ -1,7 +1,13 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service\ClassLoader;
+namespace Okapi\CodeTransformer\Core\AutoloadInterceptor;
 
+/**
+ * # Class Container
+ *
+ * This class is used to store the class paths between the Code Transformer
+ * class loader and the PHP stream filter.
+ */
 class ClassContainer
 {
     /**
