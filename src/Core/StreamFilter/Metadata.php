@@ -1,17 +1,17 @@
 <?php
+/** @noinspection PhpPropertyOnlyWrittenInspection */
+namespace Okapi\CodeTransformer\Core\StreamFilter;
 
-namespace Okapi\CodeTransformer\Service\StreamFilter;
-
-use Okapi\CodeTransformer\Exception\StreamFilter\InvalidStreamException;
-use Okapi\CodeTransformer\Service\ClassLoader\ClassContainer;
-use Okapi\CodeTransformer\Service\DI;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata\Code;
+use Okapi\CodeTransformer\Core\AutoloadInterceptor\ClassContainer;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\Exception\StreamFilter\InvalidStreamException;
+use Okapi\CodeTransformer\Transformer\Code;
 use Okapi\Path\Path;
 
 /**
  * # Metadata
  *
- * The `Metadata` class is used to store the metadata of the stream filter.
+ * This class is used to store the metadata of the stream filter.
  * It converts {@link stream_get_meta_data()} output into a more convenient
  * format.
  *
@@ -42,14 +42,12 @@ class Metadata
     /**
      * Metadata constructor.
      *
-     * @param mixed          $stream
-     * @param string         $originalSource
-     * @param ClassContainer $classContainer
+     * @param mixed  $stream
+     * @param string $originalSource
      */
     public function __construct(
-        mixed          $stream,
-        string         $originalSource,
-        ClassContainer $classContainer,
+        mixed  $stream,
+        string $originalSource,
     ) {
         if (!is_resource($stream)) {
             // @codeCoverageIgnoreStart
@@ -76,6 +74,8 @@ class Metadata
         $this->uri          = $metadata['uri'];
         $this->crypto       = $metadata['crypto'] ?? null;
         $this->mediatype    = $metadata['mediatype'] ?? null;
+
+        $classContainer = DI::get(ClassContainer::class);
 
         $this->code = DI::make(Code::class, [
             'source'          => $originalSource,

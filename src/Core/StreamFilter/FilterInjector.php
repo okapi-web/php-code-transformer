@@ -1,13 +1,13 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service\StreamFilter;
+namespace Okapi\CodeTransformer\Core\StreamFilter;
 
-use Okapi\CodeTransformer\Service\StreamFilter;
+use Okapi\CodeTransformer\Core\StreamFilter;
 
 /**
  * # Filter Injector
  *
- * The `FilterInjector` class is responsible for switching the original file path with a
+ * This class is responsible for switching the original file path with a
  * {@link https://www.php.net/manual/wrappers.php.php#wrappers.php.filter php://filter stream}.
  *
  * @see StreamFilter::register() - Initialization of the PHP filter.
