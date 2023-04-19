@@ -1,23 +1,23 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service\StreamFilter\Metadata;
+namespace Okapi\CodeTransformer\Transformer;
 
 use Microsoft\PhpParser\Node\SourceFileNode;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
-use Okapi\CodeTransformer\Service\AutoloadInterceptor;
-use Okapi\CodeTransformer\Service\DI;
-use Okapi\CodeTransformer\Util\CodeChecker;
-use Okapi\CodeTransformer\Util\StringMutator;
+use Okapi\CodeTransformer\Core\AutoloadInterceptor;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\Util\CodeChecker;
+use Okapi\CodeTransformer\Core\Util\StringMutator;
 use Roave\BetterReflection\BetterReflection;
-use Roave\BetterReflection\Reflection\ReflectionClass;
+use Roave\BetterReflection\Reflection\ReflectionClass as BetterReflectionClass;
 use Roave\BetterReflection\Reflector\DefaultReflector;
 use Roave\BetterReflection\SourceLocator\Type\ComposerSourceLocator;
 
 /**
  * # Code
  *
- * The `Code` class is used to store the source code of the stream filter
+ * This class is used to store the source code of the stream filter
  * and provide a convenient interface for manipulating it.
  */
 class Code
@@ -142,9 +142,9 @@ class Code
     /**
      * Get the reflection class.
      *
-     * @return ReflectionClass
+     * @return BetterReflectionClass
      */
-    public function getReflectionClass(): ReflectionClass
+    public function getReflectionClass(): BetterReflectionClass
     {
         static $classLoader, $astLocator, $reflector;
 
