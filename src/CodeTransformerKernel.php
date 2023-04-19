@@ -3,19 +3,19 @@
 namespace Okapi\CodeTransformer;
 
 use DI\Attribute\Inject;
-use Okapi\CodeTransformer\Exception\Kernel\DirectKernelInitializationException;
-use Okapi\CodeTransformer\Service\AutoloadInterceptor;
-use Okapi\CodeTransformer\Service\CacheStateManager;
-use Okapi\CodeTransformer\Service\DI;
-use Okapi\CodeTransformer\Service\Options;
-use Okapi\CodeTransformer\Service\StreamFilter;
-use Okapi\CodeTransformer\Service\TransformerContainer;
+use Okapi\CodeTransformer\Core\AutoloadInterceptor;
+use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
+use Okapi\CodeTransformer\Core\Container\TransformerManager;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\Exception\Kernel\DirectKernelInitializationException;
+use Okapi\CodeTransformer\Core\Options;
+use Okapi\CodeTransformer\Core\StreamFilter;
 use Okapi\Singleton\Singleton;
 
 /**
  * # Code Transformer Kernel
  *
- * The `CodeTransformerKernel` is the heart of the Code Transformer library.
+ * This class is the heart of the Code Transformer library.
  * It manages an environment for Code Transformation.
  *
  * 1. Extends this class and define a list of transformers in the
@@ -25,6 +25,30 @@ use Okapi\Singleton\Singleton;
 abstract class CodeTransformerKernel
 {
     use Singleton;
+
+    // region DI
+
+    #[Inject]
+    private Options $options;
+
+    #[Inject]
+    protected TransformerManager $transformerContainer;
+
+    #[Inject]
+    private CacheStateManager $cacheStateManager;
+
+    #[Inject]
+    private StreamFilter $streamFilter;
+
+    #[Inject]
+    private AutoloadInterceptor $autoloadInterceptor;
+
+    /**
+     * Make the constructor public to allow the DI container to instantiate the class.
+     */
+    public function __construct() {}
+
+    // endregion
 
     // region Settings
 
@@ -60,30 +84,6 @@ abstract class CodeTransformerKernel
      * @var class-string<Transformer>[]
      */
     protected array $transformers = [];
-
-    // region DI
-
-    #[Inject]
-    private Options $options;
-
-    #[Inject]
-    protected TransformerContainer $transformerContainer;
-
-    #[Inject]
-    private CacheStateManager $cacheStateManager;
-
-    #[Inject]
-    private StreamFilter $streamFilter;
-
-    #[Inject]
-    private AutoloadInterceptor $autoloadInterceptor;
-
-    /**
-     * Make the constructor public to allow the DI container to instantiate the class.
-     */
-    public function __construct() {}
-
-    // endregion
 
     /**
      * Resolve instance with dependency injection.
