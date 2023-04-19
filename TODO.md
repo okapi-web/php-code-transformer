@@ -22,3 +22,6 @@ need optimization (e.g. Profilers or benchmarking suites).
 - Document how to use xdebug with php-unit tests that use the 
   `#[RunTestsInSeparateProcesses]` attribute (PhpStorm)
 - Create a flowchart
+
+# 7. Testing
+- Add tests for the `order` property of the `Transformer` class

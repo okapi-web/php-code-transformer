@@ -12,6 +12,9 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * This test has to be run after ApplicationTest.
+ *
+ * @todo For some reason, it takes a long time for me until this test is
+ *       executed. Maybe because of RunClassInSeparateProcess?
  */
 #[RunClassInSeparateProcess]
 class B_CachedApplicationTest extends TestCase
