@@ -1,33 +1,37 @@
 <?php
 /** @noinspection PhpPropertyOnlyWrittenInspection */
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core\Container;
 
 use Error;
 use Exception;
-use Okapi\CodeTransformer\Exception\Transformer\InvalidTransformerClassException;
-use Okapi\CodeTransformer\Exception\Transformer\TransformerNotFoundException;
+use Okapi\CodeTransformer\Core\DI;
+use Okapi\CodeTransformer\Core\Exception\Transformer\InvalidTransformerClassException;
+use Okapi\CodeTransformer\Core\Exception\Transformer\TransformerNotFoundException;
+use Okapi\CodeTransformer\Core\ServiceInterface;
 use Okapi\CodeTransformer\Transformer;
 
 /**
- * # Transformer Container
+ * # Transformer Manager
  *
- * The `TransformerContainer` class is used to manage the transformers.
+ * This class is used to register and manage the transformers.
+ * @todo Don't repeat class name in docs
  */
-class TransformerContainer implements ServiceInterface
+class TransformerManager implements ServiceInterface
 {
     /**
-     * The list of transformers.
+     * The list of transformer class strings.
      *
      * @var class-string<Transformer>[]
+     * @todo CHECK if all class-string have a type
      */
     private array $transformers = [];
 
     /**
-     * Associative array of transformer instances by target class name.
+     * The list of transformer containers.
      *
-     * @var array<string, Transformer[]> The key is a wildcard target class name.
+     * @var TransformerContainer[]
      */
-    private array $transformerTargets = [];
+    private array $transformerContainers = [];
 
     // region Pre-Initialization
 
@@ -82,24 +86,34 @@ class TransformerContainer implements ServiceInterface
             }
             assert($transformerInstance instanceof Transformer);
 
-            /** @var string[] $targets */
-            $targets = (array)$transformerInstance->getTargetClass();
+            // Create transformer container
+            $transformerContainer = DI::make(TransformerContainer::class, [
+                'transformerInstance' => $transformerInstance,
+            ]);
 
-            foreach ($targets as $classRegex) {
-                $this->transformerTargets[$classRegex][] = $transformerInstance;
-            }
+            $this->transformerContainers[] = $transformerContainer;
         }
     }
 
     // endregion
 
     /**
-     * Get the transformer targets.
+     * Get the transformers.
      *
-     * @return array<string, Transformer[]> The key is a wildcard target class name.
+     * @return class-string<Transformer>[]
      */
-    public function getTransformerTargets(): array
+    public function getTransformers(): array
     {
-        return $this->transformerTargets;
+        return $this->transformers;
+    }
+
+    /**
+     * Get the transformer containers.
+     *
+     * @return TransformerContainer[]
+     */
+    public function getTransformerContainers(): array
+    {
+        return $this->transformerContainers;
     }
 }
