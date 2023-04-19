@@ -1,6 +1,8 @@
 <?php
 
+// @codeCoverageIgnoreStart
 if (!function_exists('str_starts_with_any_but_not')) {
+    // @codeCoverageIgnoreEnd
     /**
      * Determines if the given haystack starts with any of the provided needles,
      * but not with any of the provided negative needles.
