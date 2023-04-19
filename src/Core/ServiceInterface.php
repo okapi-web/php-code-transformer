@@ -1,6 +1,6 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core;
 
 /**
  * # Service Interface

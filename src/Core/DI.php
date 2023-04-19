@@ -1,6 +1,6 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core;
 
 use DI\Container;
 use DI\ContainerBuilder;
@@ -9,7 +9,7 @@ use Okapi\Singleton\Singleton;
 /**
  * # Dependency Injection
  *
- * The `DI` class is used to manage the dependency injection container.
+ * This class is used to manage the dependency injection container.
  */
 class DI implements ServiceInterface
 {

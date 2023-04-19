@@ -1,14 +1,15 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core;
 
+use Okapi\CodeTransformer\CodeTransformerKernel;
 use Okapi\Path\Path;
 
 /**
  * # Options
  *
- * The `Options` class provides access to the options passed to the
- * `CodeTransformerKernel`.
+ * This class provides access to the options passed to the
+ * {@see CodeTransformerKernel}.
  */
 class Options implements ServiceInterface
 {

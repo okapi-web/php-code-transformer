@@ -1,15 +1,15 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core;
 
 use Composer\Autoload\ClassLoader as ComposerClassLoader;
-use Okapi\CodeTransformer\Service\ClassLoader\ClassLoader;
+use Okapi\CodeTransformer\Core\AutoloadInterceptor\ClassLoader;
 
 /**
  * # Autoload Interceptor
  *
- * The `AutoloadInterceptor` class is responsible for intercepting
- * the Composer Autoloader and applying the transformers.
+ * This class is responsible for intercepting the Composer Autoloader and
+ * applying the transformers.
  *
  * @see ClassLoader::__construct() - Initialization of the Code Transformer
  *                                   class loader.
@@ -58,12 +58,12 @@ class AutoloadInterceptor implements ServiceInterface
             }
 
             // Get the original composer loader
-            $original = $loader[0];
-            DI::set(self::DI, $original);
+            $originalClassLoader = $loader[0];
+            DI::set(static::DI, $originalClassLoader);
 
             // Register the AOP class loader
             $loader[0] = DI::make(ClassLoader::class, [
-                'original' => $original,
+                'originalClassLoader' => $originalClassLoader,
             ]);
 
             // Unregister the original composer loader

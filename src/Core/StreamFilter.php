@@ -1,15 +1,15 @@
 <?php
 
-namespace Okapi\CodeTransformer\Service;
+namespace Okapi\CodeTransformer\Core;
 
-use Okapi\CodeTransformer\Service\Processor\TransformerProcessor;
-use Okapi\CodeTransformer\Service\StreamFilter\Metadata;
+use Okapi\CodeTransformer\Core\Processor\TransformerProcessor;
+use Okapi\CodeTransformer\Core\StreamFilter\Metadata;
 use php_user_filter as PhpStreamFilter;
 
 /**
  * # Stream Filter
  *
- * The `StreamFilter` class is used to register the stream filter.
+ * This class is used to register the stream filter.
  */
 class StreamFilter extends PhpStreamFilter implements ServiceInterface
 {
@@ -46,7 +46,7 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
      *
      * @return int
      *
-     * @see          https://www.php.net/manual/php-user-filter.filter.php
+     * @see https://www.php.net/manual/php-user-filter.filter.php
      */
     public function filter($in, $out, &$consumed, bool $closing): int
     {
