@@ -33,7 +33,7 @@
         "roave/better-reflection": "^6.8"
     },
     "require-dev": {
-        "phpunit/phpunit": "dev-main",
+        "phpunit/phpunit": "^10",
         "symfony/var-dumper": "^6.2"
     },
     "autoload": {
@@ -48,11 +48,5 @@
         "psr-4": {
             "Okapi\\CodeTransformer\\Tests\\": "tests/"
         }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/WalterWoshid/phpunit"
-        }
-    ]
+    }
 }
