@@ -16,5 +16,11 @@ class SyntaxErrorTransformer extends Transformer
     public function transform(Code $code): void
     {
         $code->append('}');
+
+        $refClass = $code->getReflectionClass();
+        assert($refClass->getName() === SyntaxErrorClass::class);
+
+        $className = $code->getClassName();
+        assert($className === 'SyntaxErrorClass');
     }
 }
