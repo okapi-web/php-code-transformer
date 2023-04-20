@@ -57,9 +57,16 @@ class CacheStateManager implements ServiceInterface
     /**
      * Cached metadata for the transformation state of a file.
      *
-     * @var array<string, CacheState> The key is the original file path.
+     * @var array<CacheState>
      */
-    public array $cacheState = [];
+    private array $cacheState = [];
+
+    /**
+     * New metadata for the transformation state of a file.
+     *
+     * @var array<CacheState>
+     */
+    private array $newCacheState = [];
 
     // region Initialization
 
@@ -121,8 +128,7 @@ class CacheStateManager implements ServiceInterface
         $cacheStatesArray = eval($cacheFileContent);
 
         // Check the hash
-        $transformers = $this->transformerManager->getTransformers();
-        $hash         = md5(serialize($transformers));
+        $hash = $this->getHash();
         if (!isset($cacheStatesArray[static::HASH])
             || $cacheStatesArray[static::HASH] !== $hash
         ) {
@@ -134,6 +140,17 @@ class CacheStateManager implements ServiceInterface
         $cacheStates = $this->cacheStateFactory->createCacheStates($cacheStatesArray);
 
         $this->cacheState = $cacheStates;
+    }
+
+    /**
+     * Get the hash of the transformers.
+     *
+     * @return string
+     */
+    protected function getHash(): string
+    {
+        $transformers = $this->transformerManager->getTransformers();
+        return md5(serialize($transformers));
     }
 
     // endregion
@@ -155,7 +172,7 @@ class CacheStateManager implements ServiceInterface
      */
     private function saveCacheState(): void
     {
-        if (empty($this->cacheState)) {
+        if (empty($this->newCacheState)) {
             // @codeCoverageIgnoreStart
             return;
             // @codeCoverageIgnoreEnd
@@ -167,12 +184,11 @@ class CacheStateManager implements ServiceInterface
         // Create the cache state array
         $cacheStateArray = array_map(
             fn (CacheState $cacheState) => $cacheState->toArray(),
-            $this->cacheState,
+            array_merge($this->newCacheState, $this->cacheState),
         );
 
         // Set the hash
-        $transformers                  = $this->transformerManager->getTransformers();
-        $cacheStateArray[static::HASH] = md5(serialize($transformers));
+        $cacheStateArray[static::HASH] = $this->getHash();
 
         // Serialize the cache state
         $phpCode .= var_export($cacheStateArray, true);
@@ -223,6 +239,6 @@ class CacheStateManager implements ServiceInterface
         string     $filePath,
         CacheState $cacheState,
     ): void {
-        $this->cacheState[$filePath] = $cacheState;
+        $this->newCacheState[$filePath] = $cacheState;
     }
 }

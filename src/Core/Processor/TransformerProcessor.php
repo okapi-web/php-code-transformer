@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer\Core\Processor;
 
 use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Core\Cache\CachePaths;
+use Okapi\CodeTransformer\Core\Cache\CacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\NoTransformationsCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\TransformedCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
@@ -49,14 +50,14 @@ class TransformerProcessor
         $transformerContainers = $this->transformerMatcher->getMatchedTransformerContainers($namespacedClass);
         $this->processTransformers($metadata, $transformerContainers);
 
-        $originalFilePath = $metadata->uri;
-        $cacheFilePath    = $this->cachePaths->getTransformedCachePath($originalFilePath);
-        $transformed      = $metadata->code->hasChanges();
+        $originalFilePath    = $metadata->uri;
+        $transformedFilePath = $this->cachePaths->getTransformedCachePath($originalFilePath);
+        $transformed         = $metadata->code->hasChanges();
 
         // Save the transformed code
         if ($transformed) {
             Filesystem::writeFile(
-                $cacheFilePath,
+                $transformedFilePath,
                 $metadata->code->getNewSource(),
             );
         }
@@ -67,18 +68,20 @@ class TransformerProcessor
             $transformerFilePaths = $this->getTransformerFilePaths($transformerContainers);
 
             $cacheState = DI::make(TransformedCacheState::class, [
-                'data' => [
-                    'originalFilePath'     => $originalFilePath,
-                    'modificationTime'     => $modificationTime,
-                    'transformedFilePath'  => $cacheFilePath,
-                    'transformerFilePaths' => $transformerFilePaths,
+                CacheState::DATA => [
+                    CacheState::ORIGINAL_FILE_PATH_KEY                => $originalFilePath,
+                    CacheState::NAMESPACED_CLASS_KEY                  => $namespacedClass,
+                    CacheState::MODIFICATION_TIME_KEY                 => $modificationTime,
+                    TransformedCacheState::TRANSFORMED_FILE_PATH_KEY  => $transformedFilePath,
+                    TransformedCacheState::TRANSFORMER_FILE_PATHS_KEY => $transformerFilePaths,
                 ],
             ]);
         } else {
             $cacheState = DI::make(NoTransformationsCacheState::class, [
-                'data' => [
-                    'originalFilePath' => $originalFilePath,
-                    'modificationTime' => $modificationTime,
+                CacheState::DATA => [
+                    CacheState::ORIGINAL_FILE_PATH_KEY => $originalFilePath,
+                    CacheState::NAMESPACED_CLASS_KEY   => $namespacedClass,
+                    CacheState::MODIFICATION_TIME_KEY  => $modificationTime,
                 ],
             ]);
         }
@@ -121,12 +124,9 @@ class TransformerProcessor
      * @return string[]
      *
      * @noinspection PhpDocMissingThrowsInspection Handled by TransformerNotFoundException
-     *
-     * @todo: Move this logic to the CacheStateManager by checking
-     *   if the transformers exist and are up-to-date.
      */
     protected function getTransformerFilePaths(
-        array $transformerContainers
+        array $transformerContainers,
     ): array {
         return array_map(
             function (TransformerContainer $transformerContainer) {

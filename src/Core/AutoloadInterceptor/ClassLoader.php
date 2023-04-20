@@ -80,7 +80,7 @@ class ClassLoader extends ComposerClassLoader
     /**
      * Find the path to the file and match and apply the transformers.
      *
-     * @param $namespacedClass
+     * @param class-string $namespacedClass
      *
      * @return false|string
      *
@@ -103,7 +103,6 @@ class ClassLoader extends ComposerClassLoader
         }
 
         $filePath = Path::resolve($filePath);
-
 
 
         // Query cache state
@@ -145,11 +144,11 @@ class ClassLoader extends ComposerClassLoader
                 'Okapi\\CodeTransformer\\',
                 'Okapi\\Path\\',
                 'Okapi\\Wildcards\\',
-                'DI\\'
+                'DI\\',
             ],
             [
-                'Okapi\\CodeTransformer\\Tests\\'
-            ]
+                'Okapi\\CodeTransformer\\Tests\\',
+            ],
         );
     }
 }

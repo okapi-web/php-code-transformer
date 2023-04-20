@@ -3,6 +3,7 @@
 namespace Okapi\CodeTransformer\Core\Matcher;
 
 use DI\Attribute\Inject;
+use Okapi\CodeTransformer\Core\Cache\CacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\EmptyResultCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
 use Okapi\CodeTransformer\Core\Container\TransformerContainer;
@@ -38,8 +39,8 @@ class TransformerMatcher
     /**
      * Check if the class should be transformed.
      *
-     * @param string $namespacedClass
-     * @param string $filePath
+     * @param class-string $namespacedClass
+     * @param string       $filePath
      *
      * @return bool
      */
@@ -80,9 +81,10 @@ class TransformerMatcher
         // Cache the result
         if (!$matchedTransformerContainers) {
             $cacheState = DI::make(EmptyResultCacheState::class, [
-                'data' => [
-                    'originalFilePath' => $filePath,
-                    'modificationTime' => filemtime($filePath),
+                CacheState::DATA => [
+                    CacheState::ORIGINAL_FILE_PATH_KEY => $filePath,
+                    CacheState::NAMESPACED_CLASS_KEY   => $namespacedClass,
+                    CacheState::MODIFICATION_TIME_KEY  => filemtime($filePath),
                 ],
             ]);
 
@@ -99,7 +101,7 @@ class TransformerMatcher
     /**
      * Get the matched transformers for the given class.
      *
-     * @param string $namespacedClass
+     * @param class-string $namespacedClass
      *
      * @return TransformerContainer[]
      */
