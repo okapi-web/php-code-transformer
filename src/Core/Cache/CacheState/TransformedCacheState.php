@@ -1,5 +1,5 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Cache\CacheState;
 
 use Okapi\CodeTransformer\Core\Cache\CacheState;
@@ -11,7 +11,6 @@ use Okapi\CodeTransformer\Core\Cache\CacheState;
  */
 class TransformedCacheState extends CacheState
 {
-
     public const TRANSFORMED_FILE_PATH_KEY = 'transformedFilePath';
     public const TRANSFORMER_FILE_PATHS_KEY = 'transformerFilePaths';
 
@@ -41,6 +40,11 @@ class TransformedCacheState extends CacheState
             return false;
         }
 
+        // Check if the transformed file has been deleted
+        if (!file_exists($this->transformedFilePath)) {
+            return false;
+        }
+
         // Check if any of the transformer files have been modified or deleted
         foreach ($this->transformerFilePaths as $transformerFilePath) {
             if (!file_exists($transformerFilePath)) {
@@ -48,15 +52,6 @@ class TransformedCacheState extends CacheState
                 return false;
                 // @codeCoverageIgnoreEnd
             }
-
-            if (filemtime($transformerFilePath) > $this->modificationTime) {
-                return false;
-            }
-        }
-
-        // Check if the transformed file has been deleted
-        if (!file_exists($this->transformedFilePath)) {
-            return false;
         }
 
         return true;

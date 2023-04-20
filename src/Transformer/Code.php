@@ -46,8 +46,8 @@ class Code
     /**
      * Code constructor.
      *
-     * @param string $source          The source code.
-     * @param string $namespacedClass The namespaced class name.
+     * @param string       $source          The source code.
+     * @param class-string $namespacedClass The namespaced class name.
      */
     public function __construct(
         private readonly string $source,
@@ -204,7 +204,7 @@ class Code
     /**
      * Get the namespaced class name.
      *
-     * @return string
+     * @return class-string
      */
     public function getNamespacedClass(): string
     {

@@ -50,22 +50,20 @@ class CacheStateFactory
             // Instantiate cache state
             try {
                 /** @var CacheState $cacheState */
-                $cacheState = DI::make(self::CACHE_STATE_MAP[$type]);
+                $cacheState = DI::make(static::CACHE_STATE_MAP[$type]);
                 // @codeCoverageIgnoreStart
             } catch (TypeError) {
                 continue;
             }
             // @codeCoverageIgnoreEnd
 
-            // Validate cache state
-            if (!$cacheState->valid($cacheStateArray)) {
+            // Create if valid
+            $cacheState = $cacheState->createIfValid($cacheStateArray);
+            if (!$cacheState) {
                 // @codeCoverageIgnoreStart
                 continue;
                 // @codeCoverageIgnoreEnd
             }
-
-            // Set cache state data
-            $cacheState->setData($cacheStateArray);
 
             // Add cache state to array
             $cacheStateObjects[$cacheState->originalFilePath] = $cacheState;

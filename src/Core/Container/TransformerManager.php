@@ -9,6 +9,7 @@ use Okapi\CodeTransformer\Core\Exception\Transformer\InvalidTransformerClassExce
 use Okapi\CodeTransformer\Core\Exception\Transformer\TransformerNotFoundException;
 use Okapi\CodeTransformer\Core\ServiceInterface;
 use Okapi\CodeTransformer\Transformer;
+use ReflectionClass as BaseReflectionClass;
 
 /**
  * # Transformer Manager
@@ -27,7 +28,7 @@ class TransformerManager implements ServiceInterface
     /**
      * The list of transformer containers.
      *
-     * @var TransformerContainer[]
+     * @var array<string, TransformerContainer> Key is the transformer file path
      */
     private array $transformerContainers = [];
 
@@ -66,6 +67,9 @@ class TransformerManager implements ServiceInterface
      * Get the transformer instances.
      *
      * @return void
+     *
+     * @noinspection PhpUnhandledExceptionInspection
+     * @noinspection PhpDocMissingThrowsInspection
      */
     private function loadTransformers(): void
     {
@@ -89,7 +93,11 @@ class TransformerManager implements ServiceInterface
                 'transformerInstance' => $transformerInstance,
             ]);
 
-            $this->transformerContainers[] = $transformerContainer;
+            // Create a reflection of the transformer
+            $transformerRefClass = new BaseReflectionClass($transformerInstance);
+
+            $filePath = $transformerRefClass->getFileName();
+            $this->transformerContainers[$filePath] = $transformerContainer;
         }
     }
 
@@ -108,7 +116,7 @@ class TransformerManager implements ServiceInterface
     /**
      * Get the transformer containers.
      *
-     * @return TransformerContainer[]
+     * @return array<string, TransformerContainer> Key is the transformer file path
      */
     public function getTransformerContainers(): array
     {

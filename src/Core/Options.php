@@ -2,8 +2,10 @@
 
 namespace Okapi\CodeTransformer\Core;
 
+use Composer\Autoload\ClassLoader;
 use Okapi\CodeTransformer\CodeTransformerKernel;
 use Okapi\Path\Path;
+use ReflectionClass;
 
 /**
  * # Options
@@ -68,13 +70,9 @@ class Options implements ServiceInterface
         ?int    $cacheFileMode,
         ?bool   $debug,
     ): void {
-        $rootDir = getcwd();
-
-        if ($rootDir === false) {
-            // @codeCoverageIgnoreStart
-            $rootDir = Path::resolve(Path::join(__DIR__, '../../../../..'));
-            // @codeCoverageIgnoreEnd
-        }
+        $composerRef = new ReflectionClass(ClassLoader::class);
+        $composerDir = $composerRef->getFileName();
+        $rootDir     = Path::resolve(Path::join($composerDir, '../../..'));
 
         $this->appDir        = $rootDir;
         $this->cacheDir      = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
