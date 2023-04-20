@@ -8,4 +8,5 @@ composer.lock
 # PHPUnit
 tests/coverage/
 tests/cache/
+tests/tmp/
 .phpunit.result.cache
