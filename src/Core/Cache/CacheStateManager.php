@@ -92,6 +92,7 @@ class CacheStateManager implements ServiceInterface
         Filesystem::mkdir(
             $this->options->getCacheDir(),
             $this->options->getCacheFileMode(),
+            recursive: true,
         );
     }
 
