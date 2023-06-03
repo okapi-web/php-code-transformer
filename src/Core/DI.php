@@ -30,7 +30,7 @@ class DI implements ServiceInterface
     private ContainerBuilder $containerBuilder;
 
     /**
-     * Reg
+     * Register the dependency injection container.
      *
      * @return void
      *
@@ -93,6 +93,8 @@ class DI implements ServiceInterface
      * @param        $value
      *
      * @return void
+     *
+     * @codeCoverageIgnore
      */
     public static function set(string $class, $value): void
     {
