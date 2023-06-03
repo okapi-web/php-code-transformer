@@ -63,6 +63,7 @@ composer require okapi/code-transformer
 - [Create a transformer](#create-a-transformer)
 - [Initialize the kernel](#initialize-the-kernel)
 - [Result](#result)
+- [Limitations](#limitations)
 
 
 
@@ -249,6 +250,15 @@ class MyTargetClass
 }
 $iAmAppended = true;
 ```
+
+
+# Limitations
+
+- Normally xdebug will point to the original source code, not the transformed
+  one. The problem with this is if you add or remove a line of code, xdebug
+  will point to the wrong line, so try to keep the number of lines the same
+  as the original source code.
+
 
 
 # How it works

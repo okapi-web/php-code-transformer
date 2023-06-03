@@ -14,6 +14,6 @@ class AddedTransformerKernel extends ApplicationKernel
     {
         parent::preInit();
 
-        $this->transformerContainer->addTransformers($this->addedTransformers);
+        $this->transformerManager->addTransformers($this->addedTransformers);
     }
 }

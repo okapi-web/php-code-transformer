@@ -1,18 +1,17 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Transformer;
 
+use DI\Attribute\Inject;
+use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Node\SourceFileNode;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
-use Okapi\CodeTransformer\Core\AutoloadInterceptor;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Core\Util\CodeChecker;
+use Okapi\CodeTransformer\Core\Util\ReflectionHelper;
 use Okapi\CodeTransformer\Core\Util\StringMutator;
-use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\Reflection\ReflectionClass as BetterReflectionClass;
-use Roave\BetterReflection\Reflector\DefaultReflector;
-use Roave\BetterReflection\SourceLocator\Type\ComposerSourceLocator;
 
 /**
  * # Code
@@ -22,6 +21,13 @@ use Roave\BetterReflection\SourceLocator\Type\ComposerSourceLocator;
  */
 class Code
 {
+    // region DI
+
+    #[Inject]
+    private ReflectionHelper $reflectionHelper;
+
+    // endregion
+
     /**
      * String mutator.
      *
@@ -64,13 +70,16 @@ class Code
     /**
      * Add an edit to the source code.
      *
-     * @param Token  $token       The token to edit.
-     * @param string $replacement The replacement string.
+     * @param Token|Node $token       The token or node to edit.
+     * @param string     $replacement The replacement string.
      *
      * @return void
+     *
+     * @noinspection PhpDocMissingThrowsInspection
      */
-    public function edit(Token $token, string $replacement): void
+    public function edit(Token|Node $token, string $replacement): void
     {
+        /** @noinspection PhpUnhandledExceptionInspection */
         $this->stringMutator->edit(
             $token->getStartPosition(),
             $token->getWidth(),
@@ -146,17 +155,9 @@ class Code
      */
     public function getReflectionClass(): BetterReflectionClass
     {
-        static $classLoader, $astLocator, $reflector;
-
-        if (!isset($classLoader, $astLocator, $reflector)) {
-            $classLoader = DI::get(AutoloadInterceptor::DI);
-            $astLocator  = (new BetterReflection)->astLocator();
-            $reflector   = (new DefaultReflector(
-                new ComposerSourceLocator($classLoader, $astLocator)
-            ));
-        }
-
-        return $reflector->reflectClass($this->getNamespacedClass());
+        return $this->reflectionHelper->getReflectionClass(
+            $this->getNamespacedClass(),
+        );
     }
 
     /**

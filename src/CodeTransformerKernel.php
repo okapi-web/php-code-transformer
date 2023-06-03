@@ -32,7 +32,7 @@ abstract class CodeTransformerKernel
     private Options $options;
 
     #[Inject]
-    protected TransformerManager $transformerContainer;
+    protected TransformerManager $transformerManager;
 
     #[Inject]
     private CacheStateManager $cacheStateManager;
@@ -146,7 +146,7 @@ abstract class CodeTransformerKernel
         );
 
         // Add the transformers
-        $this->transformerContainer->addTransformers($this->transformers);
+        $this->transformerManager->addTransformers($this->transformers);
     }
 
     /**
@@ -160,7 +160,7 @@ abstract class CodeTransformerKernel
         $this->options->register();
 
         // Manage the user-defined transformers
-        $this->transformerContainer->register();
+        $this->transformerManager->register();
 
         // Cache path manager
         $this->cacheStateManager->register();
