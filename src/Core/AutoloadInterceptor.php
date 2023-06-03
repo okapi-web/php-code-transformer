@@ -1,9 +1,11 @@
 <?php
-
+/** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core;
 
 use Composer\Autoload\ClassLoader as ComposerClassLoader;
+use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Core\AutoloadInterceptor\ClassLoader;
+use Okapi\CodeTransformer\Core\Util\ReflectionHelper;
 
 /**
  * # Autoload Interceptor
@@ -19,10 +21,12 @@ use Okapi\CodeTransformer\Core\AutoloadInterceptor\ClassLoader;
  */
 class AutoloadInterceptor implements ServiceInterface
 {
-    /**
-     * The DI key for the original composer class loader.
-     */
-    public const DI = 'okapi.code-transformer.service.composer.class-loader';
+    // region DI
+
+    #[Inject]
+    private ReflectionHelper $reflectionHelper;
+
+    // endregion
 
     /**
      * Register the autoload interceptor.
@@ -59,9 +63,9 @@ class AutoloadInterceptor implements ServiceInterface
 
             // Get the original composer loader
             $originalClassLoader = $loader[0];
-            DI::set(static::DI, $originalClassLoader);
+            $this->reflectionHelper->setClassLoader($originalClassLoader);
 
-            // Register the AOP class loader
+            // Create the Code Transformer class loader
             $loader[0] = DI::make(ClassLoader::class, [
                 'originalClassLoader' => $originalClassLoader,
             ]);
@@ -69,7 +73,7 @@ class AutoloadInterceptor implements ServiceInterface
             // Unregister the original composer loader
             spl_autoload_unregister($loaderToUnregister);
 
-            // Register the AOP class loader
+            // Register the Code Transformer class loader
             spl_autoload_register($loader);
         }
     }

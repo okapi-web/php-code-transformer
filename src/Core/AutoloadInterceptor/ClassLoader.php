@@ -27,7 +27,7 @@ class ClassLoader extends ComposerClassLoader
     // region DI
 
     #[Inject]
-    private TransformerMatcher $transformerMatcher;
+    protected TransformerMatcher $transformerMatcher;
 
     #[Inject]
     protected CacheStateManager $cacheStateManager;
