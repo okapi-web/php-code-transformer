@@ -25,3 +25,8 @@ need optimization (e.g. Profilers or benchmarking suites).
 
 # 7. Testing
 - Add tests for the `order` property of the `Transformer` class
+
+# 8. Production/Development support
+- Add support for production/development environments:
+  - Production: Cache will not be checked for updates (better performance).
+  - Development: Cache will be checked for updates (better debugging experience).
