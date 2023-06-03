@@ -52,6 +52,10 @@ class TransformedCacheState extends CacheState
                 return false;
                 // @codeCoverageIgnoreEnd
             }
+
+            if (filemtime($transformerFilePath) > $this->modificationTime) {
+                return false;
+            }
         }
 
         return true;
