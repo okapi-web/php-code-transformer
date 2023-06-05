@@ -59,15 +59,19 @@ composer require okapi/code-transformer
 
 ## 📖 List of contents
 
-- [Create a kernel](#create-a-kernel)
-- [Create a transformer](#create-a-transformer)
-- [Initialize the kernel](#initialize-the-kernel)
+- [Create a Kernel](#create-a-kernel)
+- [Create a Transformer](#create-a-transformer)
+- [Target Class](#target-class)
+- [Initialize the Kernel](#initialize-the-kernel)
+- [Target Class (transformed)](#target-class-transformed)
 - [Result](#result)
 - [Limitations](#limitations)
+- [How it works](#how-it-works)
+- [Testing](#testing)
 
 
 
-## Create a kernel
+## Create a Kernel
 
 ```php
 <?php
@@ -82,11 +86,19 @@ class Kernel extends CodeTransformerKernel
         StringTransformer::class,
         UnPrivateTransformer::class,
     ];
+    
+    // Define the settings of the kernel from the "protected" properties
+    
+    // The directory where the transformed source code will be stored
+    protected ?string $cacheDir = __DIR__ . '/var/cache';
+    
+    // The cache file mode
+    protected ?int $cacheFileMode = 0777;
 }
 ```
 
 
-## Create a transformer
+## Create a Transformer
 
 ```php
 // String Transformer
@@ -127,7 +139,7 @@ class StringTransformer extends Transformer
                 && $node->getStringContentsText() === 'Hello World!'
             ) {
                 // Replace it with 'Hello from Code Transformer!'
-                // Edit method accepts a Token class
+                // Edit method accepts a Token or Node class
                 $code->edit(
                     $node->children,
                     "'Hello from Code Transformer!'",
@@ -184,10 +196,28 @@ class UnPrivateTransformer extends Transformer
 ```
 
 
-## Initialize the kernel
+## Target Class
+
+```php
+<?php
+
+class MyTargetClass
+{
+    private string $myPrivateProperty = "You can't get me!";
+
+    private function myPrivateMethod(): void
+    {
+        echo 'Hello World!';
+    }
+}
+```
+
+
+## Initialize the Kernel
 
 ```php
 // Initialize the kernel early in the application lifecycle
+// Preferably after the autoloader is registered
 
 <?php
 
@@ -195,13 +225,26 @@ use MyKernel;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$kernel = new MyKernel(
-    // The directory where the transformed source code will be stored
-    cacheDir: __DIR__ . '/var/cache',
+// Initialize the Code Transformer Kernel
+$kernel = MyKernel::init();
+```
+
+
+## Target Class (transformed)
+
+```php
+<?php
+
+class MyTargetClass
+{
+    public string $myPrivateProperty = "You can't get me!";
     
-    // The cache file mode
-    cacheFileMode: 0777,
-);
+    public function myPrivateMethod(): void
+    {
+        echo 'Hello from Code Transformer!';
+    }
+}
+$iAmAppended = true;
 ```
 
 
@@ -218,39 +261,6 @@ $myTargetClass->myPrivateMethod(); // Hello from Code Transformer!
 ```
 
 
-```php
-// MyTargetClass.php
-
-<?php
-
-class MyTargetClass
-{
-    private string $myPrivateProperty = "You can't get me!";
-
-    private function myPrivateMethod(): void
-    {
-        echo 'Hello World!';
-    }
-}
-```
-
-```php
-// MyTargetClass.php (transformed)
-
-<?php
-
-class MyTargetClass
-{
-    public string $myPrivateProperty = "You can't get me!";
-    
-    public function myPrivateMethod(): void
-    {
-        echo 'Hello from Code Transformer!';
-    }
-}
-$iAmAppended = true;
-```
-
 
 # Limitations
 
@@ -263,36 +273,47 @@ $iAmAppended = true;
 
 # How it works
 
-- The `Kernel` registers multiple services 
+- The `CodeTransformerKernel` registers multiple services 
 
-  - The `TransformerContainer` service stores the list of transformers and their configuration
+  - The `TransformerManager` service stores the list of transformers and their 
+    configuration
 
   - The `CacheStateManager` service manages the cache state 
 
-  - The `StreamFilter` service registers a [PHP Stream Filter](https://www.php.net/manual/wrappers.php.php#wrappers.php.filter)
+  - The `StreamFilter` service registers a 
+    [PHP Stream Filter](https://www.php.net/manual/wrappers.php.php#wrappers.php.filter)
     which allows to modify the source code before it is loaded by PHP 
 
-  - The `AutoloadInterceptor` service overloads the Composer autoloader, which handles the loading of classes
+  - The `AutoloadInterceptor` service overloads the Composer autoloader, 
+    which handles the loading of classes
 
 
 ## General workflow when a class is loaded
 
 - The `AutoloadInterceptor` service intercepts the loading of a class
-  - It expects a class file path 
 
-- The `TransformerContainer` matches the class name with the list of transformer target classes
+- The `TransformerMatcher` matches the class name with the list of transformer 
+  target classes
 
-- If the class is matched, we query the cache state to see if the transformed source code is already cached
+- If the class is matched, query the cache state to see if the transformed 
+  source code is already cached
+
   - Check if the cache is valid: 
-    - Modification time of the caching process is less than the modification time of the source file or the transformers
+    - Modification time of the caching process is less than the modification 
+      time of the source file or the transformers
     - Check if the cache file, the source file and the transformers exist
-    - Check if the number of transformers is the same as the number of transformers in the cache
-  - If the cache is valid, we load the transformed source code from the cache
-  - If not, we convert the class file path to a stream filter path
+    - Check if the number of transformers is the same as the number of 
+      transformers in the cache
 
-- The `StreamFilter` modifies the source code by applying the matching transformers
-  - If the modified source code is different from the original source code, we cache the transformed source code
-  - If not, we cache it anyway, but without a cached source file path, so that the transformation process is not repeated
+  - If the cache is valid, load the transformed source code from the cache
+  - If not, return a stream filter path to the `AutoloadInterceptor` service
+
+- The `StreamFilter` modifies the source code by applying the matching 
+  transformers
+  - If the modified source code is different from the original source code, 
+    cache the transformed source code
+  - If not, cache it anyway, but without a cached source file path, 
+    so that the transformation process is not repeated
 
 
 
@@ -307,6 +328,15 @@ $iAmAppended = true;
 ## Show your support
 
 Give a ⭐ if this project helped you!
+
+
+
+## 🙏 Thanks
+
+- Big thanks to [lisachenko](https://github.com/lisachenko) for their pioneering
+  work on the [Go! Aspect-Oriented Framework for PHP](https://github.com/goaop/framework).
+  This project drew inspiration from their innovative approach and served as a
+  foundation for this project.
 
 
 
