@@ -31,6 +31,7 @@ abstract class CodeTransformerKernel
     #[Inject]
     private Options $options;
 
+    /** @internal */
     #[Inject]
     protected TransformerManager $transformerManager;
 
@@ -44,7 +45,10 @@ abstract class CodeTransformerKernel
     private AutoloadInterceptor $autoloadInterceptor;
 
     /**
-     * Make the constructor public to allow the DI container to instantiate the class.
+     * Make the constructor public to allow the DI container to instantiate the
+     * class.
+     *
+     * @internal
      */
     public function __construct() {}
 
@@ -70,7 +74,7 @@ abstract class CodeTransformerKernel
 
     /**
      * Enable debug mode. This will disable the cache.
-     * <br><b>Default:</b> false<br>
+     * <br><b>Default:</b> {@link false}<br>
      *
      * @var bool
      */
