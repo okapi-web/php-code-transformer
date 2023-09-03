@@ -80,6 +80,17 @@ abstract class CodeTransformerKernel
      */
     protected bool $debug = false;
 
+    /**
+     * Throw an exception if the kernel is initialized twice.
+     * <br><b>Default:</b> {@link false}<br>
+     *
+     * If {@link false}, any subsequent call to {@link init()} will be
+     *  ignored.
+     *
+     * @var bool
+     */
+    protected bool $throwExceptionOnDoubleInitialization = false;
+
     // endregion
 
     /**
@@ -115,7 +126,12 @@ abstract class CodeTransformerKernel
         static::ensureNotKernelNamespace();
 
         $instance = static::getInstance();
-        $instance->ensureNotInitialized();
+
+        if ($instance->throwExceptionOnDoubleInitialization) {
+            $instance->ensureNotInitialized();
+        } elseif ($instance->initialized) {
+            return;
+        }
 
         // Initialize the services
         $instance->preInit();
