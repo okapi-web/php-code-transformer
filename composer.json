@@ -19,8 +19,8 @@
         "php-code"
     ],
     "scripts": {
-        "test": "phpunit",
-        "test-coverage": "phpunit --coverage-html tests/coverage"
+        "test": "phpunit --display-notices",
+        "test-coverage": "phpunit --coverage-html tests/coverage --display-notices"
     },
     "require": {
         "php": ">=8.1",
