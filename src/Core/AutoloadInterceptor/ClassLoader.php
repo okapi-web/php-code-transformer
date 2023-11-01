@@ -8,6 +8,7 @@ use Okapi\CodeTransformer\Core\AutoloadInterceptor;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
 use Okapi\CodeTransformer\Core\Matcher\TransformerMatcher;
 use Okapi\CodeTransformer\Core\Options;
+use Okapi\CodeTransformer\Core\Options\Environment;
 use Okapi\CodeTransformer\Core\StreamFilter;
 use Okapi\CodeTransformer\Core\StreamFilter\FilterInjector;
 use Okapi\Path\Path;
@@ -108,10 +109,25 @@ class ClassLoader extends ComposerClassLoader
         // Query cache state
         $cacheState = $this->cacheStateManager->queryCacheState($filePath);
 
-        // Check if the file is cached and up to date
-        if ($cacheState?->isFresh() && !$this->options->isDebug()) {
+        // When debugging, bypass the caching mechanism
+        if ($this->options->isDebug()) {
+            // ...
+        }
+
+        // In production mode, use the cache without checking if it is fresh
+        elseif ($this->options->getEnvironment() === Environment::PRODUCTION
+            && $cacheState
+        ) {
             // Use the cached file if transformations have been applied
             // Or return the original file if no transformations have been applied
+            return $cacheState->getFilePath() ?? $filePath;
+        }
+
+        // In development mode, check if the cache is fresh
+        elseif ($this->options->getEnvironment() === Environment::DEVELOPMENT
+            && $cacheState
+            && $cacheState->isFresh()
+        ) {
             return $cacheState->getFilePath() ?? $filePath;
         }
 
