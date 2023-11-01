@@ -68,7 +68,6 @@ composer require okapi/code-transformer
 - [Limitations](#limitations)
 - [How it works](#how-it-works)
 - [Testing](#testing)
-- [TODO](#todo)
 
 
 
@@ -329,18 +328,6 @@ $myTargetClass->myPrivateMethod(); // Hello from Code Transformer!
 ## Show your support
 
 Give a ⭐ if this project helped you!
-
-
-
-## TODO
-
-- Add support for Production/Development environments:
-  - Production: Cache will not be checked for updates (better performance)
-  - Development: Cache will be checked for updates (better debugging experience)
-
-- Create a flowchart (WIP)
-
-- Cache lifetime
 
 
 
