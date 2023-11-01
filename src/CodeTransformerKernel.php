@@ -9,6 +9,7 @@ use Okapi\CodeTransformer\Core\Container\TransformerManager;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Core\Exception\Kernel\DirectKernelInitializationException;
 use Okapi\CodeTransformer\Core\Options;
+use Okapi\CodeTransformer\Core\Options\Environment;
 use Okapi\CodeTransformer\Core\StreamFilter;
 use Okapi\Singleton\Singleton;
 
@@ -18,9 +19,12 @@ use Okapi\Singleton\Singleton;
  * This class is the heart of the Code Transformer library.
  * It manages an environment for Code Transformation.
  *
- * 1. Extends this class and define a list of transformers in the
- *    `$transformers` property.
- * 2. Call the `init()` method early in the application lifecycle.
+ * 1. Extend this class and define a list of transformers in the
+ *    {@link $transformers} property.
+ * 2. Call the {@link init()} method early in the application lifecycle.
+ *
+ * If you want to modify the kernel options dynamically, override the
+ * {@link configureOptions()} method.
  */
 abstract class CodeTransformerKernel
 {
@@ -81,6 +85,19 @@ abstract class CodeTransformerKernel
     protected bool $debug = false;
 
     /**
+     * The environment in which the application is running.
+     * <br><b>Default:</b> {@link Environment::DEVELOPMENT}<br><br>
+     *
+     * If {@link Environment::PRODUCTION}, the cache will not be checked for
+     *   updates (better performance).<br>
+     * If {@link Environment::DEVELOPMENT}, the cache will be checked for
+     *   updates (better development experience).
+     *
+     * @var Environment
+     */
+    protected Environment $environment = Environment::DEVELOPMENT;
+
+    /**
      * Throw an exception if the kernel is initialized twice.
      * <br><b>Default:</b> {@link false}<br>
      *
@@ -135,6 +152,7 @@ abstract class CodeTransformerKernel
 
         // Initialize the services
         $instance->preInit();
+        $instance->configureOptions();
         $instance->registerServices();
         $instance->registerAutoloadInterceptor();
 
@@ -163,10 +181,21 @@ abstract class CodeTransformerKernel
             cacheDir:      $this->cacheDir,
             cacheFileMode: $this->cacheFileMode,
             debug:         $this->debug,
+            environment:   $this->environment,
         );
 
         // Add the transformers
         $this->transformerManager->addTransformers($this->transformers);
+    }
+
+    /**
+     * Configure or modify kernel options.
+     *
+     * @return void
+     */
+    protected function configureOptions(): void
+    {
+        // Override this method to configure the options dynamically
     }
 
     /**

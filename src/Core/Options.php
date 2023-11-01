@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer\Core;
 
 use Composer\Autoload\ClassLoader;
 use Okapi\CodeTransformer\CodeTransformerKernel;
+use Okapi\CodeTransformer\Core\Options\Environment;
 use Okapi\Path\Path;
 use ReflectionClass;
 
@@ -45,6 +46,13 @@ class Options implements ServiceInterface
      */
     private bool $debug;
 
+    /**
+     * The environment in which the application is running.
+     *
+     * @var Environment
+     */
+    private Environment $environment;
+
     // endregion
 
     /**
@@ -63,12 +71,14 @@ class Options implements ServiceInterface
      *
      * @param string|null $cacheDir
      * @param int|null    $cacheFileMode
-     * @param bool|null   $debug
+     * @param bool        $debug
+     * @param Environment $environment
      */
     public function setOptions(
-        ?string $cacheDir,
-        ?int    $cacheFileMode,
-        ?bool   $debug,
+        ?string     $cacheDir,
+        ?int        $cacheFileMode,
+        bool        $debug,
+        Environment $environment,
     ): void {
         $composerRef = new ReflectionClass(ClassLoader::class);
         $composerDir = $composerRef->getFileName();
@@ -77,7 +87,8 @@ class Options implements ServiceInterface
         $this->appDir        = $rootDir;
         $this->cacheDir      = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
         $this->cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
-        $this->debug         = $debug ?? false;
+        $this->debug         = $debug;
+        $this->environment   = $environment;
     }
 
     // endregion
@@ -124,5 +135,13 @@ class Options implements ServiceInterface
     public function isDebug(): bool
     {
         return $this->debug;
+    }
+
+    /**
+     * Get the environment in which the application is running.
+     */
+    public function getEnvironment(): Environment
+    {
+        return $this->environment;
     }
 }
