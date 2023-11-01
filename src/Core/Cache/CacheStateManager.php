@@ -185,7 +185,7 @@ class CacheStateManager implements ServiceInterface
         // Create the cache state array
         $cacheStateArray = array_map(
             fn (CacheState $cacheState) => $cacheState->toArray(),
-            array_merge($this->newCacheState, $this->cacheState),
+            array_merge($this->cacheState, $this->newCacheState),
         );
 
         // Set the hash
