@@ -152,6 +152,7 @@ abstract class CodeTransformerKernel
 
         // Initialize the services
         $instance->preInit();
+        $instance->configureOptions();
         $instance->registerServices();
         $instance->registerAutoloadInterceptor();
 
@@ -185,6 +186,16 @@ abstract class CodeTransformerKernel
 
         // Add the transformers
         $this->transformerManager->addTransformers($this->transformers);
+    }
+
+    /**
+     * Configure or modify kernel options.
+     *
+     * @return void
+     */
+    protected function configureOptions(): void
+    {
+        // Override this method to configure the options dynamically
     }
 
     /**
