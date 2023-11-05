@@ -3,8 +3,6 @@
 namespace Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass;
 
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
-use Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass\Kernel\ChangedClassKernel;
-use Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass\Target\ChangedClass;
 use Okapi\CodeTransformer\Tests\Util;
 use Okapi\Filesystem\Filesystem;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -21,9 +19,9 @@ class ChangedClassTest extends TestCase
     public function testChangedClass(): void
     {
         Util::clearCache();
-        ChangedClassKernel::init();
+        Kernel::init();
 
-        $class = ChangedClass::class;
+        $class = Target::class;
         $this->assertWillBeTransformed($class);
 
         $changedClass = new $class();
@@ -36,7 +34,7 @@ class ChangedClassTest extends TestCase
     public function testCachedChangedClass(): void
     {
         // Change class
-        $classFilePath            = Util::getFilePath(ChangedClass::class);
+        $classFilePath            = Util::getFilePath(Target::class);
         $originalClassFileContent = Filesystem::readFile($classFilePath);
 
         $changedFileContent = str_replace(
@@ -50,9 +48,9 @@ class ChangedClassTest extends TestCase
 
         $exception = null;
         try {
-            ChangedClassKernel::init();
+            Kernel::init();
 
-            $class = ChangedClass::class;
+            $class = Target::class;
             $this->assertWillBeTransformed($class);
 
             $classInstance = new $class();

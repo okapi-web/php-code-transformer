@@ -4,7 +4,7 @@ namespace Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\T
 
 use Microsoft\PhpParser\Node\StringLiteral;
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Target\StringClass;
-use Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\Target\MultipleTransformersClass;
+use Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\TargetClass;
 use Okapi\CodeTransformer\Transformer;
 use Okapi\CodeTransformer\Transformer\Code;
 
@@ -14,7 +14,7 @@ class StringTransformer extends Transformer
 
     public function getTargetClass(): string|array
     {
-        return [StringClass::class, 'Okapi*Tests*StringClass', MultipleTransformersClass::class];
+        return [StringClass::class, 'Okapi*Tests*StringClass', TargetClass::class];
     }
 
     public function transform(Code $code): void

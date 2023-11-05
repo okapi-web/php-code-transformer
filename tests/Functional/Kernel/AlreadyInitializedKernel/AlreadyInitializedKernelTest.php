@@ -2,7 +2,6 @@
 
 namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AlreadyInitializedKernel;
 
-use Okapi\CodeTransformer\Tests\Functional\Kernel\AlreadyInitializedKernel\Kernel\ExceptionOnDoubleInitializationKernel;
 use Okapi\CodeTransformer\Tests\Stubs\Kernel\EmptyKernel;
 use Okapi\CodeTransformer\Tests\Util;
 use Okapi\Singleton\Exceptions\AlreadyInitializedException;
@@ -28,7 +27,7 @@ class AlreadyInitializedKernelTest extends TestCase
 
         $this->expectException(AlreadyInitializedException::class);
 
-        ExceptionOnDoubleInitializationKernel::init();
-        ExceptionOnDoubleInitializationKernel::init();
+        Kernel::init();
+        Kernel::init();
     }
 }

@@ -5,7 +5,6 @@ namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer;
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
 use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Kernel\AddedTransformerKernel;
 use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Kernel\BeforeAddedTransformerKernel;
-use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Target\AddedTransformerClass;
 use Okapi\CodeTransformer\Tests\Util;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
@@ -20,7 +19,7 @@ class AddedTransformerTest extends TestCase
         Util::clearCache();
         BeforeAddedTransformerKernel::init();
 
-        $class = AddedTransformerClass::class;
+        $class = Target::class;
         $this->assertWillBeTransformed($class);
 
         $addedTransformerClass = new $class();
@@ -35,7 +34,7 @@ class AddedTransformerTest extends TestCase
     {
         AddedTransformerKernel::init();
 
-        $class = AddedTransformerClass::class;
+        $class = Target::class;
         $this->assertWillBeTransformed($class);
 
         $addedTransformerClass = new $class();

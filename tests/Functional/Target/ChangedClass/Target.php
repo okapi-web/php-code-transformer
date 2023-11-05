@@ -1,8 +1,8 @@
 <?php
 
-namespace Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass\Target;
+namespace Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass;
 
-class ChangedClass
+class Target
 {
     public function test(): string
     {

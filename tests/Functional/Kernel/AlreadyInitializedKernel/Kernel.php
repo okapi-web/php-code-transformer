@@ -1,11 +1,11 @@
 <?php
 /** @noinspection PhpUnhandledExceptionInspection */
-namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AlreadyInitializedKernel\Kernel;
+namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AlreadyInitializedKernel;
 
 use Exception;
 use Okapi\CodeTransformer\Tests\Stubs\Kernel\EmptyKernel;
 
-class ExceptionOnDoubleInitializationKernel extends EmptyKernel
+class Kernel extends EmptyKernel
 {
     private int $initCount = 0;
 

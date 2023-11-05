@@ -4,7 +4,6 @@ namespace Okapi\CodeTransformer\Tests\Functional\Kernel\CustomDependencyInjectio
 
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Target\StringClass;
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Transformer\StringTransformer;
-use Okapi\CodeTransformer\Tests\Functional\Kernel\CustomDependencyInjectionHandler\Kernel\CustomDependencyInjectionKernel;
 use Okapi\CodeTransformer\Tests\Util;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
@@ -18,7 +17,17 @@ class CustomDependencyInjectionHandlerTest extends TestCase
     public function testCustomDependencyInjectionHandler(): void
     {
         Util::clearCache();
-        CustomDependencyInjectionKernel::init();
+
+        ob_start();
+
+        Kernel::init();
+
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString(
+            'Generating transformer instance: ' . StringTransformer::class,
+            $output,
+        );
 
         $class = new StringClass();
 

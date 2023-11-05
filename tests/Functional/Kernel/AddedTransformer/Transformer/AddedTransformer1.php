@@ -6,7 +6,7 @@ use Microsoft\PhpParser\Node\Expression\AssignmentExpression;
 use Microsoft\PhpParser\Node\Expression\Variable;
 use Microsoft\PhpParser\Node\Statement\ExpressionStatement;
 use Microsoft\PhpParser\Node\StringLiteral;
-use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Target\AddedTransformerClass;
+use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Target;
 use Okapi\CodeTransformer\Transformer;
 use Okapi\CodeTransformer\Transformer\Code;
 
@@ -14,7 +14,7 @@ class AddedTransformer1 extends Transformer
 {
     public function getTargetClass(): string|array
     {
-        return AddedTransformerClass::class;
+        return Target::class;
     }
 
     public function transform(Code $code): void

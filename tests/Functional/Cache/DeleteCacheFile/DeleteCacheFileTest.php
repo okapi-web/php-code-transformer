@@ -3,8 +3,6 @@
 namespace Okapi\CodeTransformer\Tests\Functional\Cache\DeleteCacheFile;
 
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
-use Okapi\CodeTransformer\Tests\Functional\Cache\DeleteCacheFile\Kernel\DeleteCacheFileKernel;
-use Okapi\CodeTransformer\Tests\Functional\Cache\DeleteCacheFile\Target\DeleteCacheFileClass;
 use Okapi\CodeTransformer\Tests\Util;
 use Okapi\Filesystem\Filesystem;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -18,9 +16,9 @@ class DeleteCacheFileTest extends TestCase
     public function testDeleteCacheFileClass(): void
     {
         Util::clearCache();
-        DeleteCacheFileKernel::init();
+        Kernel::init();
 
-        $class = DeleteCacheFileClass::class;
+        $class = Target::class;
         $this->assertWillBeTransformed($class);
 
         $deleteCacheFileClass = new $class();
@@ -32,15 +30,15 @@ class DeleteCacheFileTest extends TestCase
 
     public function testCachedDeleteCacheFileClass(): void
     {
-        DeleteCacheFileKernel::init();
+        Kernel::init();
 
-        $cachedFilePath = Util::getTransformedFilePath(DeleteCacheFileClass::class);
+        $cachedFilePath = Util::getTransformedFilePath(Target::class);
 
         $this->assertFileExists($cachedFilePath);
         Filesystem::rm($cachedFilePath);
         $this->assertFileDoesNotExist($cachedFilePath);
 
-        $class = DeleteCacheFileClass::class;
+        $class = Target::class;
         $this->assertWillBeTransformed($class);
 
         $deleteCacheFileClass = new $class();

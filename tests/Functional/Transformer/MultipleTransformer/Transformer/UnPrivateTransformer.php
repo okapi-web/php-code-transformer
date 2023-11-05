@@ -3,7 +3,7 @@
 namespace Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\Transformer;
 
 use Microsoft\PhpParser\TokenKind;
-use Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\Target\MultipleTransformersClass;
+use Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\TargetClass;
 use Okapi\CodeTransformer\Transformer;
 use Okapi\CodeTransformer\Transformer\Code;
 
@@ -11,7 +11,7 @@ class UnPrivateTransformer extends Transformer
 {
     public function getTargetClass(): string|array
     {
-        return MultipleTransformersClass::class;
+        return TargetClass::class;
     }
 
     public function transform(Code $code): void

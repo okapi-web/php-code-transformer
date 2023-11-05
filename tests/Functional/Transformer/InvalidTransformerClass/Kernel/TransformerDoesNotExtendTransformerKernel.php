@@ -3,7 +3,7 @@
 namespace Okapi\CodeTransformer\Tests\Functional\Transformer\InvalidTransformerClass\Kernel;
 
 use Okapi\CodeTransformer\CodeTransformerKernel;
-use Okapi\CodeTransformer\Tests\Functional\Transformer\InvalidTransformerClass\Transformer\InvalidTransformer;
+use Okapi\CodeTransformer\Tests\Functional\Transformer\InvalidTransformerClass\InvalidTransformer;
 use Okapi\CodeTransformer\Tests\Util;
 
 class TransformerDoesNotExtendTransformerKernel extends CodeTransformerKernel

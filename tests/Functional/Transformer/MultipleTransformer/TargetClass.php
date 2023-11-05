@@ -1,8 +1,8 @@
 <?php
 /** @noinspection ALL */
-namespace Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\Target;
+namespace Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer;
 
-class MultipleTransformersClass
+class TargetClass
 {
     private string $privateProperty = "You can't get me!";
 

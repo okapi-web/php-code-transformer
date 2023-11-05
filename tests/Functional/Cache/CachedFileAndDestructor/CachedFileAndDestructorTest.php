@@ -5,7 +5,6 @@ namespace Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
-use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Kernel\CachedFileAndDestructorKernel;
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Target\StringClass;
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Transformer\StringTransformer;
 use Okapi\CodeTransformer\Tests\Util;
@@ -21,7 +20,7 @@ class CachedFileAndDestructorTest extends TestCase
     public function testReplaceStringInClass(): void
     {
         Util::clearCache();
-        CachedFileAndDestructorKernel::init();
+        Kernel::init();
 
         $class = StringClass::class;
         $this->assertWillBeTransformed($class);
@@ -43,7 +42,7 @@ class CachedFileAndDestructorTest extends TestCase
 
     public function testCachedReplaceStringClass(): void
     {
-        CachedFileAndDestructorKernel::init();
+        Kernel::init();
 
         $class = StringClass::class;
         $this->assertTransformerLoadedFromCache($class);
@@ -76,7 +75,7 @@ class CachedFileAndDestructorTest extends TestCase
     public function testDestructor(): void
     {
         Util::clearCache();
-        CachedFileAndDestructorKernel::init();
+        Kernel::init();
 
         $class = StringClass::class;
         $stringClass = new $class();

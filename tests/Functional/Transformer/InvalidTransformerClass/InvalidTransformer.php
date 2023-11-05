@@ -1,6 +1,6 @@
 <?php
 
-namespace Okapi\CodeTransformer\Tests\Functional\Transformer\InvalidTransformerClass\Transformer;
+namespace Okapi\CodeTransformer\Tests\Functional\Transformer\InvalidTransformerClass;
 
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Target\StringClass;
 use Okapi\CodeTransformer\Transformer\Code;

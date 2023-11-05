@@ -3,8 +3,6 @@
 namespace Okapi\CodeTransformer\Tests\Functional\Target\NoChanges;
 
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
-use Okapi\CodeTransformer\Tests\Functional\Target\NoChanges\Kernel\NoChangesKernel;
-use Okapi\CodeTransformer\Tests\Functional\Target\NoChanges\Target\NoChangesClass;
 use Okapi\CodeTransformer\Tests\Util;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
@@ -17,9 +15,9 @@ class NoChangesTest extends TestCase
     public function testNoChangesClass(): void
     {
         Util::clearCache();
-        NoChangesKernel::init();
+        Kernel::init();
 
-        $class = NoChangesClass::class;
+        $class = Target::class;
         $this->assertWillBeTransformed($class);
 
         new $class();
@@ -27,15 +25,15 @@ class NoChangesTest extends TestCase
 
     public function testCachedNoChangesClass(): void
     {
-        NoChangesKernel::init();
+        Kernel::init();
 
-        $class = NoChangesClass::class;
+        $class = Target::class;
         $this->assertTransformerNotApplied($class);
 
         new $class();
 
-        $originalFilePath = Util::getFilePath(NoChangesClass::class);
-        $cachedFilePath   = Util::getTransformedFilePath(NoChangesClass::class);
+        $originalFilePath = Util::getFilePath(Target::class);
+        $cachedFilePath   = Util::getTransformedFilePath(Target::class);
         $this->assertFileExists($originalFilePath);
         $this->assertFileDoesNotExist($cachedFilePath);
     }

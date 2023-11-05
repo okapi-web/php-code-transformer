@@ -3,8 +3,6 @@
 namespace Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer;
 
 use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
-use Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\Kernel\MultipleTransformerKernel;
-use Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer\Target\MultipleTransformersClass;
 use Okapi\CodeTransformer\Tests\Util;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
@@ -17,9 +15,9 @@ class MultipleTransformersTest extends TestCase
     public function testMultipleTransformers(): void
     {
         Util::clearCache();
-        MultipleTransformerKernel::init();
+        Kernel::init();
 
-        $class = MultipleTransformersClass::class;
+        $class = TargetClass::class;
         $this->assertWillBeTransformed($class);
 
         $multipleTransformersClass = new $class();
@@ -37,9 +35,9 @@ class MultipleTransformersTest extends TestCase
 
     public function testCachedMultipleTransformers(): void
     {
-        MultipleTransformerKernel::init();
+        Kernel::init();
 
-        $class = MultipleTransformersClass::class;
+        $class = TargetClass::class;
         $this->assertTransformerLoadedFromCache($class);
 
         $multipleTransformersClass = new $class();

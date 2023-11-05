@@ -1,13 +1,13 @@
 <?php
 
-namespace Okapi\CodeTransformer\Tests\Functional\Kernel\CustomDependencyInjectionHandler\Kernel;
+namespace Okapi\CodeTransformer\Tests\Functional\Kernel\CustomDependencyInjectionHandler;
 
 use Closure;
 use Okapi\CodeTransformer\CodeTransformerKernel;
 use Okapi\CodeTransformer\Tests\Functional\Cache\CachedFileAndDestructor\Transformer\StringTransformer;
 use Okapi\CodeTransformer\Tests\Util;
 
-class CustomDependencyInjectionKernel extends CodeTransformerKernel
+class Kernel extends CodeTransformerKernel
 {
     protected ?string $cacheDir = Util::CACHE_DIR;
 

@@ -1,17 +1,16 @@
 <?php
 
-namespace Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass\Transformer;
+namespace Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass;
 
 use Microsoft\PhpParser\Node\StringLiteral;
-use Okapi\CodeTransformer\Tests\Functional\Target\ChangedClass\Target\ChangedClass;
-use Okapi\CodeTransformer\Transformer;
+use Okapi\CodeTransformer\Transformer as TransformerClass;
 use Okapi\CodeTransformer\Transformer\Code;
 
-class ChangedClassTransformer extends Transformer
+class Transformer extends TransformerClass
 {
     public function getTargetClass(): string|array
     {
-        return ChangedClass::class;
+        return Target::class;
     }
 
     public function transform(Code $code): void

@@ -1,8 +1,8 @@
 <?php
 
-namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Target;
+namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer;
 
-class AddedTransformerClass
+class Target
 {
     public function test(): string
     {
