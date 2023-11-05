@@ -36,15 +36,13 @@ class ChangedClassTest extends TestCase
     public function testCachedChangedClass(): void
     {
         // Change class
-        $classFilePath    = Util::getFilePath(ChangedClass::class);
-        $classFileContent = Filesystem::readFile($classFilePath);
-        $tmpPath          = Util::TMP_DIR . '/ChangedClass.php';
-        Filesystem::writeFile($tmpPath, $classFileContent);
+        $classFilePath            = Util::getFilePath(ChangedClass::class);
+        $originalClassFileContent = Filesystem::readFile($classFilePath);
 
         $changedFileContent = str_replace(
             'Hello World!',
             'Hello Changed World!',
-            $classFileContent,
+            $originalClassFileContent,
         );
 
         sleep(1);
@@ -67,13 +65,7 @@ class ChangedClassTest extends TestCase
         }
 
         // Restore class
-        if (!file_exists($tmpPath)) {
-            return;
-        }
-
-        $tmpFileContent = Filesystem::readFile($tmpPath);
-
-        Filesystem::writeFile($classFilePath, $tmpFileContent);
+        Filesystem::writeFile($classFilePath, $originalClassFileContent);
 
         if ($exception !== null) {
             /** @noinspection PhpUnhandledExceptionInspection */
