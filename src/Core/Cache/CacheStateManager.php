@@ -89,8 +89,14 @@ class CacheStateManager implements ServiceInterface
      */
     private function initializeCacheDirectory(): void
     {
+        $cacheDir = $this->options->getCacheDir();
+
+        if (file_exists($cacheDir)) {
+            return;
+        }
+
         Filesystem::mkdir(
-            $this->options->getCacheDir(),
+            $cacheDir,
             $this->options->getCacheFileMode(),
             recursive: true,
         );
