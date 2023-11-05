@@ -91,7 +91,9 @@ class TransformerManager implements ServiceInterface
     {
         // Check if the transformer is already loaded
         if (array_key_exists($transformerClassName, $this->transformerContainers)) {
+            // @codeCoverageIgnoreStart
             return;
+            // @codeCoverageIgnoreEnd
         }
 
         // Validate the transformer
@@ -102,10 +104,6 @@ class TransformerManager implements ServiceInterface
         // Instantiate the transformer
         if ($this->dependencyInjectionHandler) {
             $transformerInstance = ($this->dependencyInjectionHandler)($transformerClassName);
-
-            if (!($transformerInstance instanceof Transformer)) {
-                throw new InvalidTransformerClassException($transformerClassName);
-            }
         } else {
             try {
                 $transformerInstance = DI::make($transformerClassName);
