@@ -219,7 +219,7 @@ abstract class CodeTransformerKernel
         $this->options->register();
 
         $this->transformerManager->registerCustomDependencyInjectionHandler(
-            $this->dependencyInjectionHandler()
+            $this->dependencyInjectionHandler(),
         );
         $this->transformerManager->register();
 

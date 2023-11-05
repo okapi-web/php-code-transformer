@@ -35,7 +35,7 @@ class TransformerManager implements ServiceInterface
     private array $transformerContainers = [];
 
     /**
-     * @var ?Closure(class-string<Transformer>): Transformer
+     * @var null|Closure(class-string<Transformer>): Transformer
      */
     private ?Closure $dependencyInjectionHandler = null;
 
@@ -103,7 +103,10 @@ class TransformerManager implements ServiceInterface
 
         // Instantiate the transformer
         if ($this->dependencyInjectionHandler) {
-            $transformerInstance = ($this->dependencyInjectionHandler)($transformerClassName);
+            $transformerInstance = ($this->dependencyInjectionHandler)(
+                $transformerClassName,
+                ...($this->getAdditionalDependencyInjectionParams()),
+            );
         } else {
             try {
                 $transformerInstance = DI::make($transformerClassName);
@@ -128,6 +131,11 @@ class TransformerManager implements ServiceInterface
 
         $filePath = $transformerRefClass->getFileName();
         $this->transformerContainers[$filePath] = $transformerContainer;
+    }
+
+    protected function getAdditionalDependencyInjectionParams(): array
+    {
+        return [];
     }
 
     // endregion
