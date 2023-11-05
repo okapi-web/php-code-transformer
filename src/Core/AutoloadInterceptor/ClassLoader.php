@@ -86,6 +86,7 @@ class ClassLoader extends ComposerClassLoader
      * @return false|string
      *
      * @noinspection PhpParameterNameChangedDuringInheritanceInspection
+     * @noinspection PhpStatementHasEmptyBodyInspection
      */
     public function findFile($namespacedClass): false|string
     {

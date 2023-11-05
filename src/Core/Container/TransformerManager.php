@@ -2,10 +2,12 @@
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Container;
 
+use Closure;
 use Error;
 use Exception;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Core\Exception\Transformer\InvalidTransformerClassException;
+use Okapi\CodeTransformer\Core\Exception\Transformer\InvalidTransformerClassNameException;
 use Okapi\CodeTransformer\Core\Exception\Transformer\TransformerNotFoundException;
 use Okapi\CodeTransformer\Core\ServiceInterface;
 use Okapi\CodeTransformer\Transformer;
@@ -32,6 +34,11 @@ class TransformerManager implements ServiceInterface
      */
     private array $transformerContainers = [];
 
+    /**
+     * @var ?Closure(class-string<Transformer>): Transformer
+     */
+    private ?Closure $dependencyInjectionHandler = null;
+
     // region Pre-Initialization
 
     /**
@@ -54,51 +61,73 @@ class TransformerManager implements ServiceInterface
     // region Initialization
 
     /**
-     * Register the transformer container.
-     *
-     * @return void
+     * @param null|(Closure(class-string<Transformer>): Transformer) $dependencyInjectionHandler
      */
+    public function registerCustomDependencyInjectionHandler(
+        ?Closure $dependencyInjectionHandler
+    ): void {
+        $this->dependencyInjectionHandler = $dependencyInjectionHandler;
+    }
+
     public function register(): void
     {
         $this->loadTransformers();
     }
 
+    private function loadTransformers(): void
+    {
+        foreach ($this->transformers as $transformer) {
+            $this->loadTransformer($transformer);
+        }
+    }
+
     /**
-     * Get the transformer instances.
-     *
-     * @return void
+     * @param class-string<Transformer> $transformerClassName
      *
      * @noinspection PhpUnhandledExceptionInspection
      * @noinspection PhpDocMissingThrowsInspection
      */
-    private function loadTransformers(): void
+    private function loadTransformer(mixed $transformerClassName): void
     {
-        foreach ($this->transformers as $transformer) {
-            // Instantiate the transformer
-            try {
-                $transformerInstance = DI::make($transformer);
-            } catch (Error|Exception) {
-                throw new TransformerNotFoundException($transformer);
-            }
-
-            // Validate the transformer
-            $isTransformer = $transformerInstance instanceof Transformer;
-            if (!$isTransformer) {
-                throw new InvalidTransformerClassException($transformer);
-            }
-            assert($transformerInstance instanceof Transformer);
-
-            // Create transformer container
-            $transformerContainer = DI::make(TransformerContainer::class, [
-                'transformerInstance' => $transformerInstance,
-            ]);
-
-            // Create a reflection of the transformer
-            $transformerRefClass = new BaseReflectionClass($transformerInstance);
-
-            $filePath = $transformerRefClass->getFileName();
-            $this->transformerContainers[$filePath] = $transformerContainer;
+        // Check if the transformer is already loaded
+        if (array_key_exists($transformerClassName, $this->transformerContainers)) {
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
         }
+
+        // Validate the transformer
+        if (gettype($transformerClassName) !== 'string') {
+            throw new InvalidTransformerClassNameException;
+        }
+
+        // Instantiate the transformer
+        if ($this->dependencyInjectionHandler) {
+            $transformerInstance = ($this->dependencyInjectionHandler)($transformerClassName);
+        } else {
+            try {
+                $transformerInstance = DI::make($transformerClassName);
+            } catch (Error|Exception) {
+                throw new TransformerNotFoundException($transformerClassName);
+            }
+        }
+
+        // Validate the transformer
+        $isTransformer = $transformerInstance instanceof Transformer;
+        if (!$isTransformer) {
+            throw new InvalidTransformerClassException($transformerClassName);
+        }
+
+        // Create transformer container
+        $transformerContainer = DI::make(TransformerContainer::class, [
+            'transformerInstance' => $transformerInstance,
+        ]);
+
+        // Create a reflection of the transformer
+        $transformerRefClass = new BaseReflectionClass($transformerInstance);
+
+        $filePath = $transformerRefClass->getFileName();
+        $this->transformerContainers[$filePath] = $transformerContainer;
     }
 
     // endregion

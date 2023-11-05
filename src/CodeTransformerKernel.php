@@ -2,6 +2,7 @@
 
 namespace Okapi\CodeTransformer;
 
+use Closure;
 use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Core\AutoloadInterceptor;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
@@ -160,7 +161,7 @@ abstract class CodeTransformerKernel
     }
 
     /**
-     * Register the dependency injection.
+     * Internal dependency injection.
      *
      * @return void
      */
@@ -199,22 +200,31 @@ abstract class CodeTransformerKernel
     }
 
     /**
-     * Register the services.
+     * Custom dependency injection handler.
      *
-     * @return void
+     * Pass a closure that takes a transformer class name as the argument and
+     * returns a transformer instance.
+     *
+     * @return null|Closure(class-string<Transformer>): Transformer
      */
+    protected function dependencyInjectionHandler(): ?Closure
+    {
+        // Override this method to configure the dependency injection handler
+
+        return null;
+    }
+
     protected function registerServices(): void
     {
-        // Options provider
         $this->options->register();
 
-        // Manage the user-defined transformers
+        $this->transformerManager->registerCustomDependencyInjectionHandler(
+            $this->dependencyInjectionHandler()
+        );
         $this->transformerManager->register();
 
-        // Cache path manager
         $this->cacheStateManager->register();
 
-        // Stream filter -> Source transformer
         $this->streamFilter->register();
     }
 

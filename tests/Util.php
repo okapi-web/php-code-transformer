@@ -6,12 +6,10 @@ use Okapi\Filesystem\Filesystem;
 
 class Util
 {
-    public const CACHE_DIR                       = __DIR__ . '/cache';
-    public const STUBS_DIR                       = __DIR__ . '/Stubs';
-    public const CACHED_STUBS_DIR                = self::CACHE_DIR . '/transformed/tests/Stubs';
-    public const CLASSES_TO_TRANSFORM_DIR        = self::STUBS_DIR . '/ClassesToTransform';
-    public const CACHED_CLASSES_TO_TRANSFORM_DIR = self::CACHED_STUBS_DIR . '/ClassesToTransform';
-    public const TMP_DIR                         = __DIR__ . '/tmp';
+    private const TESTS_DIR                   = __DIR__;
+
+    public const CACHE_DIR                    = self::TESTS_DIR . '/cache';
+    private const CACHE_DIR_TRANSFORMED_TESTS = self::CACHE_DIR . '/transformed/tests';
 
     public const CACHE_STATES_FILE = self::CACHE_DIR . '/cache_states.php';
 
@@ -22,10 +20,39 @@ class Util
             recursive: true,
             force: true,
         );
-        Filesystem::rm(
-            path: Util::TMP_DIR,
-            recursive: true,
-            force: true,
+    }
+
+    public static function getFilePath(string $class): string
+    {
+        $class = str_replace(
+            search: 'Okapi\CodeTransformer\Tests\\',
+            replace: '',
+            subject: $class,
         );
+
+        $class = str_replace(
+            search: '\\',
+            replace: '/',
+            subject: $class,
+        );
+
+        return Util::TESTS_DIR . '/' . $class . '.php';
+    }
+
+    public static function getTransformedFilePath(string $class): string
+    {
+        $class = str_replace(
+            search: 'Okapi\CodeTransformer\Tests\\',
+            replace: '',
+            subject: $class,
+        );
+
+        $class = str_replace(
+            search: '\\',
+            replace: '/',
+            subject: $class,
+        );
+
+        return Util::CACHE_DIR_TRANSFORMED_TESTS . '/' . $class . '.php';
     }
 }
