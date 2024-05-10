@@ -10,6 +10,7 @@ use Okapi\CodeTransformer\Core\Container\TransformerContainer;
 use Okapi\CodeTransformer\Core\Container\TransformerManager;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Transformer;
+use Okapi\Path\Path;
 use Okapi\Wildcards\Regex;
 
 /**
@@ -44,7 +45,7 @@ class TransformerMatcher
      *
      * @return bool
      */
-    public function match(string $namespacedClass, string $filePath): bool
+    public function matchAndStore(string $namespacedClass, string $filePath): bool
     {
         // Get the transformers
         $transformerContainers = $this->transformerContainer->getTransformerContainers();
@@ -80,22 +81,33 @@ class TransformerMatcher
 
         // Cache the result
         if (!$matchedTransformerContainers) {
-            $cacheState = DI::make(EmptyResultCacheState::class, [
-                CacheState::DATA => [
-                    CacheState::ORIGINAL_FILE_PATH_KEY => $filePath,
-                    CacheState::NAMESPACED_CLASS_KEY   => $namespacedClass,
-                    CacheState::MODIFICATION_TIME_KEY  => filemtime($filePath),
-                ],
-            ]);
-
-            // Set the cache state
-            $this->cacheStateManager->setCacheState(
+            $this->cacheEmptyResult(
+                $namespacedClass,
                 $filePath,
-                $cacheState,
             );
         }
 
         return (bool)$matchedTransformerContainers;
+    }
+
+    private function cacheEmptyResult(
+        string $namespacedClass,
+        string $filePath,
+    ): void {
+        $filePath   = Path::resolve($filePath);
+        $cacheState = DI::make(EmptyResultCacheState::class, [
+            CacheState::DATA => [
+                CacheState::ORIGINAL_FILE_PATH_KEY => $filePath,
+                CacheState::NAMESPACED_CLASS_KEY   => $namespacedClass,
+                CacheState::MODIFICATION_TIME_KEY  => filemtime($filePath),
+            ],
+        ]);
+
+        // Set the cache state
+        $this->cacheStateManager->setCacheState(
+            $filePath,
+            $cacheState,
+        );
     }
 
     /**
