@@ -2,6 +2,7 @@
 
 namespace Okapi\CodeTransformer\Core\StreamFilter;
 
+use Okapi\CodeTransformer\Core\CachedStreamFilter;
 use Okapi\CodeTransformer\Core\StreamFilter;
 
 /**
@@ -39,6 +40,16 @@ class FilterInjector
             static::PHP_FILTER_READ,
             StreamFilter::FILTER_ID,
             $filePath
+        );
+    }
+
+    public function rewriteCached(string $filePath): string
+    {
+        return sprintf(
+            "%s%s/resource=%s",
+            static::PHP_FILTER_READ,
+            CachedStreamFilter::CACHED_FILTER_ID,
+            $filePath,
         );
     }
 }

@@ -6,6 +6,7 @@ use Closure;
 use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Core\AutoloadInterceptor;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
+use Okapi\CodeTransformer\Core\CachedStreamFilter;
 use Okapi\CodeTransformer\Core\Container\TransformerManager;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Core\Exception\Kernel\DirectKernelInitializationException;
@@ -45,6 +46,9 @@ abstract class CodeTransformerKernel
 
     #[Inject]
     private StreamFilter $streamFilter;
+
+    #[Inject]
+    private CachedStreamFilter $cachedStreamFilter;
 
     #[Inject]
     private AutoloadInterceptor $autoloadInterceptor;
@@ -226,6 +230,7 @@ abstract class CodeTransformerKernel
         $this->cacheStateManager->register();
 
         $this->streamFilter->register();
+        $this->cachedStreamFilter->register();
     }
 
     /**

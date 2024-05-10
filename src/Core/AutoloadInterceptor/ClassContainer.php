@@ -13,21 +13,28 @@ class ClassContainer
     /**
      * The class paths.
      *
-     * @var array<string, string>
+     * @var array<string, array{namespacedClass: class-string, cachedFilePath: string|null}>
      */
-    private array $namespacedClassPaths = [];
+    private array $classContext = [];
 
     /**
      * Add a class path.
      *
      * @param string $path
-     * @param string $class
+     * @param class-string $namespacedClass
+     * @param string|null $cachedFilePath
      *
      * @return void
      */
-    public function addNamespacedClassPath(string $path, string $class): void
-    {
-        $this->namespacedClassPaths[$path] = $class;
+    public function addClassContext(
+        string $path,
+        string $namespacedClass,
+        ?string $cachedFilePath = null,
+    ): void {
+        $this->classContext[$path] = [
+            'namespacedClass' => $namespacedClass,
+            'cachedFilePath' => $cachedFilePath,
+        ];
     }
 
     /**
@@ -39,6 +46,11 @@ class ClassContainer
      */
     public function getNamespacedClassByPath(string $path): string
     {
-        return $this->namespacedClassPaths[$path];
+        return $this->classContext[$path]['namespacedClass'];
+    }
+
+    public function getCachedFilePath(string $filePath): string
+    {
+        return $this->classContext[$filePath]['cachedFilePath'];
     }
 }
