@@ -108,7 +108,7 @@ class ClassLoader extends ComposerClassLoader
         $filePath = Path::resolve($filePath);
 
         foreach ($this->options->getExcludePaths() as $path) {
-            if (str_starts_with($filePath, $path)) {
+            if (str_starts_with($filePath, Path::resolve($path))) {
                 return $filePath;
             }
         }
