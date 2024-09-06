@@ -33,6 +33,13 @@ class Options implements ServiceInterface
     private string $cacheDir;
 
     /**
+     * The exclude paths.
+     *
+     * @var array
+     */
+    private array $excludePaths;
+
+    /**
      * The cache file mode.
      *
      * @var int
@@ -79,6 +86,7 @@ class Options implements ServiceInterface
         ?int        $cacheFileMode,
         bool        $debug,
         Environment $environment,
+        array       $excludePaths = [],
     ): void {
         $composerRef = new ReflectionClass(ClassLoader::class);
         $composerDir = $composerRef->getFileName();
@@ -89,6 +97,7 @@ class Options implements ServiceInterface
         $this->cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
         $this->debug         = $debug;
         $this->environment   = $environment;
+        $this->excludePaths  = $excludePaths;
     }
 
     // endregion
@@ -119,6 +128,14 @@ class Options implements ServiceInterface
     public function getCacheDir(): string
     {
         return $this->cacheDir;
+    }
+
+    /**
+     * Get the exclude paths.
+     */
+    public function getExcludePaths(): array
+    {
+        return $this->excludePaths;
     }
 
     /**
