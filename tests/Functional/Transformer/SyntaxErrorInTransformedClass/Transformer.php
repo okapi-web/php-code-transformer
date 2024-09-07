@@ -19,7 +19,7 @@ class Transformer extends TransformerClass
         $refClass = $code->getReflectionClass();
         assert($refClass->getName() === Target::class);
 
-        $className = $code->getClassName();
+        $className = $code->getNewSource();
         assert($className === 'SyntaxErrorClass');
     }
 }

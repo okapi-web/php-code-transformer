@@ -74,6 +74,13 @@ abstract class CodeTransformerKernel
     protected ?string $cacheDir = null;
 
     /**
+     * The exclude paths. Paths/directories in this array will be excluded
+     *
+     * @var array
+     */
+    protected array $excludePaths = [];
+
+    /**
      * The cache file mode.
      * <br><b>Default:</b> 0777 & ~{@link umask()}<br>
      *
@@ -187,6 +194,7 @@ abstract class CodeTransformerKernel
             cacheFileMode: $this->cacheFileMode,
             debug:         $this->debug,
             environment:   $this->environment,
+            excludePaths:  $this->excludePaths,
         );
 
         // Add the transformers
