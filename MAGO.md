@@ -8,7 +8,7 @@ composer check         # formatting, linter, and analyzer for source and tests
 composer format-check  # check formatting without changing files
 composer lint
 composer analyze
-composer format        # apply formatting when ready to address the findings
+composer format        # apply formatting
 ```
 
 `mago.toml` checks both `src` and `tests`, targeting PHP 8.1, the minimum supported
@@ -21,11 +21,10 @@ and `isset` retain the existing API conventions. Aggregate complexity metrics ar
 left to review, and the parameter-count threshold is 10. Analyzer missing-type
 checks are enabled, and checks fail on findings at note severity or higher.
 
-Existing formatting, lint, and analyzer findings are left for a separate cleanup.
-There is no baseline, vendor type patch, or diagnostic suppression. The CI quality
-job runs `composer check` and will fail until those findings are addressed.
-Composer stops at the first failing command, so run `composer lint` and
-`composer analyze` separately to inspect findings while formatting still fails.
+Formatting, lint, and analyzer checks pass without a baseline or vendor type patch.
+`Metadata` has one documented `too-many-properties` expectation because its public
+fields mirror PHP stream metadata. All other findings are addressed in source and
+tests. The CI quality job runs `composer check`.
 
 The scripts invoke the project-local PHP launcher. Its first invocation downloads
 the matching native binary; CI supplies `GITHUB_TOKEN` for that download. On

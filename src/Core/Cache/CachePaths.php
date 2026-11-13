@@ -6,6 +6,7 @@ namespace Okapi\CodeTransformer\Core\Cache;
 use DI\Attribute\Inject;
 use Okapi\CodeTransformer\Core\Options;
 use Okapi\Path\Path;
+use RuntimeException;
 
 /**
  * # Cache Paths
@@ -68,7 +69,12 @@ class CachePaths
         // Append the string to the cache dir
         $newDir = Path::join($cacheDir, $append);
 
-        return Path::resolve(str_replace($appDir, $newDir, $file));
+        $path = Path::resolve(str_replace($appDir, $newDir, $file));
+        if (!is_string($path)) {
+            throw new RuntimeException('Cannot resolve cache path for ' . $file);
+        }
+
+        return $path;
     }
 
     /**

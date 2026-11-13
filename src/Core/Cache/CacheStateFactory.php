@@ -6,7 +6,6 @@ use Okapi\CodeTransformer\Core\Cache\CacheState\EmptyResultCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\NoTransformationsCacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\TransformedCacheState;
 use Okapi\CodeTransformer\Core\DI;
-use TypeError;
 
 /**
  * # Cache State Factory
@@ -27,37 +26,29 @@ class CacheStateFactory
     /**
      * Create cache states from the cache state file.
      *
-     * @param array<string, array<string, string>> $cacheStatesArray
+     * @param array<array-key, mixed> $cacheStatesArray
      *
-     * @return CacheState[]
+     * @return array<string, CacheState>
      */
     public function createCacheStates(array $cacheStatesArray): array
     {
         $cacheStateObjects = [];
 
-        foreach ($cacheStatesArray as $cacheStateArray) {
-            // Skip cache states without a type
-            if (!isset($cacheStateArray[CacheState::TYPE])) {
-                // @codeCoverageIgnoreStart
+        foreach (array_keys($cacheStatesArray) as $cacheKey) {
+            /** @var mixed $cacheStateArray */
+            $cacheStateArray = $cacheStatesArray[$cacheKey];
+            if (!is_array($cacheStateArray)) {
                 continue;
-
-                // @codeCoverageIgnoreEnd
             }
 
-            // Get type
-            $type = $cacheStateArray[CacheState::TYPE];
+            /** @var mixed $type */
+            $type = $cacheStateArray[CacheState::TYPE] ?? null;
+            if (!is_string($type) || !isset(static::CACHE_STATE_MAP[$type])) {
+                continue;
+            }
+
             unset($cacheStateArray[CacheState::TYPE]);
-
-            // Instantiate cache state
-            try {
-                /** @var CacheState $cacheState */
-                $cacheState = DI::make(static::CACHE_STATE_MAP[$type]);
-
-                // @codeCoverageIgnoreStart
-            } catch (TypeError) {
-                continue;
-            }
-            // @codeCoverageIgnoreEnd
+            $cacheState = DI::make(static::CACHE_STATE_MAP[$type]);
 
             // Create if valid
             $cacheState = $cacheState->createIfValid($cacheStateArray);

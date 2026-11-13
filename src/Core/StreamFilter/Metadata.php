@@ -16,6 +16,9 @@ use Okapi\Path\Path;
  * It converts {@link stream_get_meta_data()} output into a more convenient
  * format.
  *
+ * The public fields mirror PHP stream metadata and remain available to transformers.
+ *
+ * @mago-expect lint:too-many-properties
  * @see https://www.php.net/manual/function.stream-get-meta-data.php
  */
 class Metadata
@@ -37,6 +40,7 @@ class Metadata
     public string $mode;
     public bool $seekable;
     public string $uri;
+    /** @var array<array-key, mixed>|null */
     public ?array $crypto;
     public ?string $mediatype;
 
@@ -56,10 +60,21 @@ class Metadata
         }
 
         // Create metadata from stream
+        /** @var array{timed_out: bool, blocked: bool, eof: bool, unread_bytes: int, stream_type: string, wrapper_type?: string, wrapper_data?: mixed, mode: string, seekable: bool, uri?: string, crypto?: array<array-key, mixed>, mediatype?: string} $metadata */
         $metadata = stream_get_meta_data($stream);
+        if (!isset($metadata['uri'])) {
+            throw new InvalidStreamException();
+        }
+
+        $matches = [];
         if (preg_match('/resource=(.+)$/', $metadata['uri'], $matches)) {
             // Resolve the '/resource=...' uri to a path
-            $metadata['uri'] = Path::resolve($matches[1]);
+            $uri = Path::resolve($matches[1]);
+            if (!is_string($uri)) {
+                throw new InvalidStreamException();
+            }
+
+            $metadata['uri'] = $uri;
         }
 
         $this->timed_out = $metadata['timed_out'];
@@ -67,7 +82,7 @@ class Metadata
         $this->eof = $metadata['eof'];
         $this->unread_bytes = $metadata['unread_bytes'];
         $this->stream_type = $metadata['stream_type'];
-        $this->wrapper_type = $metadata['wrapper_type'];
+        $this->wrapper_type = $metadata['wrapper_type'] ?? '';
         $this->wrapper_data = $metadata['wrapper_data'] ?? null;
         $this->mode = $metadata['mode'];
         $this->seekable = $metadata['seekable'];

@@ -18,7 +18,7 @@ class AlreadyInitializedKernelTest extends TestCase
         EmptyKernel::init();
         EmptyKernel::init();
 
-        $this->assertTrue(true);
+        static::assertTrue(true);
     }
 
     public function testInitializeKernelTwiceWithExceptionOnDoubleInitializationOption(): void

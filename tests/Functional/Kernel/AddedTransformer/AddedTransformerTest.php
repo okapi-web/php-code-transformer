@@ -22,9 +22,9 @@ class AddedTransformerTest extends TestCase
         $class = Target::class;
         $this->assertWillBeTransformed($class);
 
-        $addedTransformerClass = new $class();
+        $addedTransformerClass = new Target();
 
-        $this->assertSame('Hello Code Transformer!', $addedTransformerClass->test());
+        static::assertSame('Hello Code Transformer!', $addedTransformerClass->test());
     }
 
     public function testCachedAddedTransformer(): void
@@ -34,7 +34,7 @@ class AddedTransformerTest extends TestCase
         $class = Target::class;
         $this->assertWillBeTransformed($class);
 
-        $addedTransformerClass = new $class();
-        $this->assertSame('Hello from Code Transformer!', $addedTransformerClass->test());
+        $addedTransformerClass = new Target();
+        static::assertSame('Hello from Code Transformer!', $addedTransformerClass->test());
     }
 }

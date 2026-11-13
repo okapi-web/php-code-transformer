@@ -13,6 +13,7 @@ use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Transformer;
 use Okapi\Path\Path;
 use Okapi\Wildcards\Regex;
+use RuntimeException;
 
 /**
  * # Transformer Matcher
@@ -34,7 +35,7 @@ class TransformerMatcher
     /**
      * Cache for the query result of the transformer matching.
      *
-     * @var array<class-string, Transformer[]>
+     * @var array<class-string, TransformerContainer[]>
      */
     private array $matchedTransformerContainers = [];
 
@@ -62,10 +63,11 @@ class TransformerMatcher
                     // Check if the transformer has already been matched
                     $alreadyMatched = array_reduce(
                         $matchedTransformerContainers,
-                        function (bool $carry, TransformerContainer $container) use ($transformerContainer) {
-                            return $carry || $container === $transformerContainer;
-                        },
-                        false,
+                        static fn(bool $carry, TransformerContainer $container) => (
+                            $carry
+                            || $container === $transformerContainer
+                        ),
+                        initial: false,
                     );
 
                     if ($alreadyMatched) {
@@ -91,6 +93,10 @@ class TransformerMatcher
     private function cacheEmptyResult(string $namespacedClass, string $filePath): void
     {
         $filePath = Path::resolve($filePath);
+        if (!is_string($filePath)) {
+            throw new RuntimeException('Cannot resolve the source file path.');
+        }
+
         $cacheState = DI::make(EmptyResultCacheState::class, [
             CacheState::DATA => [
                 CacheState::ORIGINAL_FILE_PATH_KEY => $filePath,

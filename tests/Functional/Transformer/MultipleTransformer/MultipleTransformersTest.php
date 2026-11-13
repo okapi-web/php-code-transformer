@@ -6,6 +6,8 @@ use Okapi\CodeTransformer\Tests\ClassLoaderMockTrait;
 use Okapi\CodeTransformer\Tests\Util;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
+use ReflectionProperty;
 
 #[RunTestsInSeparateProcesses]
 class MultipleTransformersTest extends TestCase
@@ -20,11 +22,9 @@ class MultipleTransformersTest extends TestCase
         $class = TargetClass::class;
         $this->assertWillBeTransformed($class);
 
-        $multipleTransformersClass = new $class();
+        $multipleTransformersClass = new TargetClass();
 
-        $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
-
-        $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
+        $this->assertTransformedMembers($multipleTransformersClass);
     }
 
     public function testCachedMultipleTransformers(): void
@@ -34,10 +34,20 @@ class MultipleTransformersTest extends TestCase
         $class = TargetClass::class;
         $this->assertTransformerLoadedFromCache($class);
 
-        $multipleTransformersClass = new $class();
+        $multipleTransformersClass = new TargetClass();
 
-        $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
+        $this->assertTransformedMembers($multipleTransformersClass);
+    }
 
-        $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
+    private function assertTransformedMembers(TargetClass $target): void
+    {
+        $method = new ReflectionMethod($target, 'test');
+        $property = new ReflectionProperty($target, 'privateProperty');
+
+        static::assertTrue($method->isPublic());
+        static::assertTrue($property->isPublic());
+        static::assertSame('Hello from Code Transformer!', $method->invoke($target));
+        static::assertSame("You can't get me!", $property->getValue($target));
+        static::assertSame(['Hello from Code Transformer!', "You can't get me!"], $target->snapshot());
     }
 }

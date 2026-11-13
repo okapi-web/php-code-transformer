@@ -39,7 +39,7 @@ class Code
     /**
      * List of strings to be appended to the source code.
      *
-     * @var array
+     * @var list<string>
      */
     private array $appendList = [];
 
@@ -207,6 +207,7 @@ class Code
      */
     public function getClassName(): string
     {
-        return substr($this->namespacedClass, strrpos($this->namespacedClass, '\\') + 1);
+        $separator = strrpos($this->namespacedClass, '\\');
+        return $separator === false ? $this->namespacedClass : substr($this->namespacedClass, $separator + 1);
     }
 }

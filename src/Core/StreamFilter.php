@@ -2,6 +2,7 @@
 
 namespace Okapi\CodeTransformer\Core;
 
+use Okapi\CodeTransformer\Core\Exception\StreamFilter\InvalidStreamException;
 use Okapi\CodeTransformer\Core\Processor\TransformerProcessor;
 use Okapi\CodeTransformer\Core\StreamFilter\Metadata;
 use php_user_filter as PhpStreamFilter;
@@ -50,13 +51,23 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
      */
     public function filter($in, $out, &$consumed, bool $closing): int
     {
+        /** @var mixed $stream */
+        $stream = $this->stream;
+        if (!is_resource($stream)) {
+            throw new InvalidStreamException();
+        }
+
         // Read the stream until EOF
-        while ($bucket = stream_bucket_make_writeable($in)) {
+        while (true) {
+            $bucket = stream_bucket_make_writeable($in);
+            if ($bucket === null) {
+                break;
+            }
             $this->data .= $bucket->data;
         }
 
         // If the stream is closed, transform the code
-        if ($closing || feof($this->stream)) {
+        if ($closing || feof($stream)) {
             $consumed = strlen($this->data);
 
             // Store the metadata
@@ -72,7 +83,7 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
             // Set the new source code
             $source = $metadata->code->getNewSource();
 
-            $bucket = stream_bucket_new($this->stream, $source);
+            $bucket = stream_bucket_new($stream, $source);
             stream_bucket_append($out, $bucket);
 
             // Pass the (transformed) source code to the next filter

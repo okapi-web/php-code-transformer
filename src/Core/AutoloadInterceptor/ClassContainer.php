@@ -2,6 +2,8 @@
 
 namespace Okapi\CodeTransformer\Core\AutoloadInterceptor;
 
+use LogicException;
+
 /**
  * # Class Container
  *
@@ -39,7 +41,7 @@ class ClassContainer
      *
      * @param string $path
      *
-     * @return string
+     * @return class-string
      */
     public function getNamespacedClassByPath(string $path): string
     {
@@ -48,6 +50,11 @@ class ClassContainer
 
     public function getCachedFilePath(string $filePath): string
     {
-        return $this->classContext[$filePath]['cachedFilePath'];
+        $cachedFilePath = $this->classContext[$filePath]['cachedFilePath'] ?? null;
+        if ($cachedFilePath === null) {
+            throw new LogicException('No cached file registered for ' . $filePath);
+        }
+
+        return $cachedFilePath;
     }
 }

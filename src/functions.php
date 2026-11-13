@@ -8,9 +8,9 @@ if (!function_exists('str_starts_with_any_but_not')) {
      * but not with any of the provided negative needles.
      *
      * @param string $haystack        The string to search in.
-     * @param array  $needles         An array of strings to search for at the
+     * @param string[] $needles         An array of strings to search for at the
      *                                beginning of the $haystack.
-     * @param array  $negativeNeedles An array of strings to ensure are not at
+     * @param string[] $negativeNeedles An array of strings to ensure are not at
      *                                the beginning of $haystack.
      *
      * @return bool Returns {@link true} if $haystack starts with any string in

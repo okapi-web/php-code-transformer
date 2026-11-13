@@ -13,10 +13,11 @@ class Kernel extends CodeTransformerKernel
 
     protected function dependencyInjectionHandler(): ?Closure
     {
-        return function (string $transformerClass) {
+        /** @param class-string<\Okapi\CodeTransformer\Transformer> $transformerClass */
+        return static function (string $transformerClass): \Okapi\CodeTransformer\Transformer {
             echo 'Generating transformer instance: ' . $transformerClass . PHP_EOL;
 
-            return new $transformerClass();
+            return new StringTransformer();
         };
     }
 

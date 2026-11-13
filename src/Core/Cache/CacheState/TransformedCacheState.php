@@ -16,6 +16,10 @@ class TransformedCacheState extends CacheState
     public const TRANSFORMER_FILE_PATHS_KEY = 'transformerFilePaths';
 
     public string $transformedFilePath;
+
+    /**
+     * @var string[]
+     */
     public array $transformerFilePaths;
 
     /**
@@ -52,7 +56,8 @@ class TransformedCacheState extends CacheState
                 // @codeCoverageIgnoreEnd
             }
 
-            if (filemtime($transformerFilePath) > $this->modificationTime) {
+            $modified = filemtime($transformerFilePath);
+            if ($modified === false || $modified > $this->modificationTime) {
                 // @codeCoverageIgnoreStart
                 return false;
 

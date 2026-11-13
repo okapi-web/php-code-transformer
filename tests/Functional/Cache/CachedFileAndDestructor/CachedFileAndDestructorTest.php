@@ -25,13 +25,13 @@ class CachedFileAndDestructorTest extends TestCase
         $class = StringClass::class;
         $this->assertWillBeTransformed($class);
 
-        $stringClass = new $class();
-        $this->assertSame('Hello from Code Transformer!', $stringClass->test());
+        $stringClass = new StringClass();
+        static::assertSame('Hello from Code Transformer!', $stringClass->test());
 
         $file = Util::getFilePath(StringClass::class);
         $content = Filesystem::readFile($file);
 
-        $this->assertEquals($content, StringTransformer::$originalSourceCode);
+        static::assertEquals($content, StringTransformer::$originalSourceCode);
     }
 
     public function testCachedReplaceStringClass(): void
@@ -41,20 +41,20 @@ class CachedFileAndDestructorTest extends TestCase
         $class = StringClass::class;
         $this->assertTransformerLoadedFromCache($class);
 
-        $stringClass = new $class();
-        $this->assertSame('Hello from Code Transformer!', $stringClass->test());
+        $stringClass = new StringClass();
+        static::assertSame('Hello from Code Transformer!', $stringClass->test());
     }
 
     public function testCachedFile(): void
     {
         $cachedFilePath = Util::getTransformedFilePath(StringClass::class);
 
-        $this->assertFileExists($cachedFilePath);
+        static::assertFileExists($cachedFilePath);
         $file = Filesystem::readFile($cachedFilePath);
 
-        $this->assertStringContainsString('Hello from Code Transformer!', $file);
+        static::assertStringContainsString('Hello from Code Transformer!', $file);
 
-        $this->assertStringContainsString('$iAmAppended = true;', $file);
+        static::assertStringContainsString('$iAmAppended = true;', $file);
     }
 
     public function testDestructor(): void
@@ -63,18 +63,20 @@ class CachedFileAndDestructorTest extends TestCase
         Kernel::init();
 
         $class = StringClass::class;
-        $stringClass = new $class();
+        $stringClass = new StringClass();
 
         $cacheStateManager = DI::get(CacheStateManager::class);
 
-        $this->assertFileDoesNotExist(Util::CACHE_STATES_FILE);
+        static::assertFileDoesNotExist(Util::CACHE_STATES_FILE);
         $cacheStateManager->__destruct();
-        $this->assertFileExists(Util::CACHE_STATES_FILE);
+        static::assertFileExists(Util::CACHE_STATES_FILE);
 
+        /** @var mixed $file */
         $file = require Util::CACHE_STATES_FILE;
+        static::assertIsArray($file);
 
         $key = 'CODE_TRANSFORMER_APP_DIR\tests\Functional\Cache\CachedFileAndDestructor\Target\StringClass.php';
         $key = str_replace('\\', DIRECTORY_SEPARATOR, $key);
-        $this->assertArrayHasKey($key, $file);
+        static::assertArrayHasKey($key, $file);
     }
 }

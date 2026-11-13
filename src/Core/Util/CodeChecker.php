@@ -17,11 +17,11 @@ class CodeChecker
      */
     public function isValidPhpCode(string $code): void
     {
-        static $parser;
-
-        if (!isset($parser)) {
+        static $parser = null;
+        if (!$parser instanceof Parser) {
             $parser = new Parser();
         }
+
         $sourceFileNode = $parser->parseSourceFile($code);
         $errors = DiagnosticsProvider::getDiagnostics($sourceFileNode);
 
@@ -34,7 +34,9 @@ class CodeChecker
                 $error = new SyntaxError($e, $code, $error);
             }
 
-            throw $error;
+            if ($error !== null) {
+                throw $error;
+            }
         }
     }
 }

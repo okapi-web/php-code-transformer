@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer\Tests\Functional\Transformer\SyntaxErrorInTransf
 
 use Okapi\CodeTransformer\Transformer as TransformerClass;
 use Okapi\CodeTransformer\Transformer\Code;
+use PHPUnit\Framework\Assert;
 
 class Transformer extends TransformerClass
 {
@@ -17,9 +18,9 @@ class Transformer extends TransformerClass
         $code->append('}');
 
         $refClass = $code->getReflectionClass();
-        assert($refClass->getName() === Target::class);
+        Assert::assertSame(Target::class, $refClass->getName(), 'The reflected member must match this fixture.');
 
         $className = $code->getNewSource();
-        assert($className === 'SyntaxErrorClass');
+        Assert::assertSame('SyntaxErrorClass', $className, 'The reflected member must match this fixture.');
     }
 }

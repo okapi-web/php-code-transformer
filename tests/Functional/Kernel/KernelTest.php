@@ -14,19 +14,19 @@ class KernelTest extends TestCase
     {
         Util::clearCache();
 
-        $this->assertFalse(EmptyKernel::isInitialized());
+        static::assertFalse(EmptyKernel::isInitialized());
         EmptyKernel::init();
-        $this->assertTrue(EmptyKernel::isInitialized());
+        static::assertTrue(EmptyKernel::isInitialized());
 
-        $this->assertFileDoesNotExist(Util::CACHE_STATES_FILE);
+        static::assertFileDoesNotExist(Util::CACHE_STATES_FILE);
     }
 
     public function testCachedKernel(): void
     {
-        $this->assertFalse(EmptyKernel::isInitialized());
+        static::assertFalse(EmptyKernel::isInitialized());
         EmptyKernel::init();
-        $this->assertTrue(EmptyKernel::isInitialized());
+        static::assertTrue(EmptyKernel::isInitialized());
 
-        $this->assertFileExists(Util::CACHE_STATES_FILE);
+        static::assertFileExists(Util::CACHE_STATES_FILE);
     }
 }

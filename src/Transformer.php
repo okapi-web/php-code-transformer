@@ -27,7 +27,7 @@ abstract class Transformer
      *
      * Wildcards are supported. See Okapi/Wildcards for more information.
      *
-     * @return class-string|class-string[]
+     * @return string|string[] Class names or wildcard patterns.
      */
     abstract public function getTargetClass(): string|array;
 
