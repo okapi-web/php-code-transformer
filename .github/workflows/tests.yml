@@ -21,6 +21,23 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    name: Mago formatter, linter and analyzer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Install development dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+      - name: Run formatter, linter and analyzer without a baseline
+        run: composer check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   run:
     runs-on: ${{ matrix.operating-system }}
     timeout-minutes: 15

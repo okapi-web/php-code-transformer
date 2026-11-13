@@ -1,0 +1,34 @@
+php-version = "8.1"
+
+[source]
+paths = ["src", "tests"]
+includes = ["vendor"]
+excludes = ["tests/cache", "tests/coverage", "tests/tmp"]
+
+[linter]
+integrations = ["phpunit"]
+
+# Preserve the library's coercion contract and existing public call signatures.
+[linter.rules.strict-types]
+enabled = false
+[linter.rules.literal-named-argument]
+enabled = false
+[linter.rules.no-boolean-flag-parameter]
+enabled = false
+# isset intentionally distinguishes null from a usable value throughout this code.
+[linter.rules.no-isset]
+enabled = false
+# Complexity metrics are review aids, not correctness gates for a code transformation library.
+[linter.rules.halstead]
+enabled = false
+[linter.rules.kan-defect]
+enabled = false
+[linter.rules.cyclomatic-complexity]
+enabled = false
+[linter.rules.too-many-methods]
+enabled = false
+[linter.rules.excessive-parameter-list]
+threshold = 10
+
+[analyzer]
+check-missing-type-hints = true
