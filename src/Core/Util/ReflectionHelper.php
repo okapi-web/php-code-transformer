@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpInternalEntityUsedInspection */
 namespace Okapi\CodeTransformer\Core\Util;
 

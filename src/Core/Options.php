@@ -82,22 +82,22 @@ class Options implements ServiceInterface
      * @param Environment $environment
      */
     public function setOptions(
-        ?string     $cacheDir,
-        ?int        $cacheFileMode,
-        bool        $debug,
+        ?string $cacheDir,
+        ?int $cacheFileMode,
+        bool $debug,
         Environment $environment,
-        array       $excludePaths = [],
+        array $excludePaths = [],
     ): void {
         $composerRef = new ReflectionClass(ClassLoader::class);
         $composerDir = $composerRef->getFileName();
-        $rootDir     = Path::resolve(Path::join($composerDir, '../../..'));
+        $rootDir = Path::resolve(Path::join($composerDir, '../../..'));
 
-        $this->appDir        = $rootDir;
-        $this->cacheDir      = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
-        $this->cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
-        $this->debug         = $debug;
-        $this->environment   = $environment;
-        $this->excludePaths  = $excludePaths;
+        $this->appDir = $rootDir;
+        $this->cacheDir = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
+        $this->cacheFileMode = $cacheFileMode ?? 0777 & ~umask();
+        $this->debug = $debug;
+        $this->environment = $environment;
+        $this->excludePaths = $excludePaths;
     }
 
     // endregion

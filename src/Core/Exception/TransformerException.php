@@ -7,6 +7,4 @@ namespace Okapi\CodeTransformer\Core\Exception;
  *
  * This exception is thrown when a transformer fails to transform the code.
  */
-abstract class TransformerException extends CodeTransformerException
-{
-}
+abstract class TransformerException extends CodeTransformerException {}

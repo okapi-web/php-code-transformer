@@ -190,11 +190,11 @@ abstract class CodeTransformerKernel
     {
         // Set options
         $this->options->setOptions(
-            cacheDir:      $this->cacheDir,
+            cacheDir: $this->cacheDir,
             cacheFileMode: $this->cacheFileMode,
-            debug:         $this->debug,
-            environment:   $this->environment,
-            excludePaths:  $this->excludePaths,
+            debug: $this->debug,
+            environment: $this->environment,
+            excludePaths: $this->excludePaths,
         );
 
         // Add the transformers
@@ -230,9 +230,7 @@ abstract class CodeTransformerKernel
     {
         $this->options->register();
 
-        $this->transformerManager->registerCustomDependencyInjectionHandler(
-            $this->dependencyInjectionHandler(),
-        );
+        $this->transformerManager->registerCustomDependencyInjectionHandler($this->dependencyInjectionHandler());
         $this->transformerManager->register();
 
         $this->cacheStateManager->register();
@@ -263,7 +261,7 @@ abstract class CodeTransformerKernel
         $namespace = get_called_class();
 
         if ($namespace === CodeTransformerKernel::class) {
-            throw new DirectKernelInitializationException;
+            throw new DirectKernelInitializationException();
         }
     }
 }

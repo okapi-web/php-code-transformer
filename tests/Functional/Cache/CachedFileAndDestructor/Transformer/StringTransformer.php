@@ -23,16 +23,9 @@ class StringTransformer extends Transformer
 
         foreach ($sourceFileNode->getDescendantNodes() as $node) {
             // Find 'Hello World!' string
-            if ($node instanceof StringLiteral
-                && $node->getStringContentsText() === 'Hello World!'
-            ) {
+            if ($node instanceof StringLiteral && $node->getStringContentsText() === 'Hello World!') {
                 // Replace it with 'Hello from Code Transformer!'
-                $code->edit(
-                    $node->children,
-                    "'Hello from Code Transformer!'",
-                );
-
-
+                $code->edit($node->children, "'Hello from Code Transformer!'");
 
                 $code->append('$iAmAppended = true;');
             }

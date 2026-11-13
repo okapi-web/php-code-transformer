@@ -61,7 +61,7 @@ class StreamFilter extends PhpStreamFilter implements ServiceInterface
 
             // Store the metadata
             $metadata = DI::make(Metadata::class, [
-                'stream'         => $this->stream,
+                'stream' => $this->stream,
                 'originalSource' => $this->data,
             ]);
 

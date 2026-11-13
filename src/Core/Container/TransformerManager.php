@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Container;
 
@@ -50,10 +51,7 @@ class TransformerManager implements ServiceInterface
      */
     public function addTransformers(array $transformers): void
     {
-        $this->transformers = array_merge(
-            $this->transformers,
-            $transformers,
-        );
+        $this->transformers = array_merge($this->transformers, $transformers);
     }
 
     // endregion
@@ -63,9 +61,8 @@ class TransformerManager implements ServiceInterface
     /**
      * @param null|(Closure(class-string<Transformer>): Transformer) $dependencyInjectionHandler
      */
-    public function registerCustomDependencyInjectionHandler(
-        ?Closure $dependencyInjectionHandler
-    ): void {
+    public function registerCustomDependencyInjectionHandler(?Closure $dependencyInjectionHandler): void
+    {
         $this->dependencyInjectionHandler = $dependencyInjectionHandler;
     }
 
@@ -93,19 +90,20 @@ class TransformerManager implements ServiceInterface
         if (array_key_exists($transformerClassName, $this->transformerContainers)) {
             // @codeCoverageIgnoreStart
             return;
+
             // @codeCoverageIgnoreEnd
         }
 
         // Validate the transformer
         if (gettype($transformerClassName) !== 'string') {
-            throw new InvalidTransformerClassNameException;
+            throw new InvalidTransformerClassNameException();
         }
 
         // Instantiate the transformer
         if ($this->dependencyInjectionHandler) {
             $transformerInstance = ($this->dependencyInjectionHandler)(
                 $transformerClassName,
-                ...($this->getAdditionalDependencyInjectionParams()),
+                ...$this->getAdditionalDependencyInjectionParams(),
             );
         } else {
             try {

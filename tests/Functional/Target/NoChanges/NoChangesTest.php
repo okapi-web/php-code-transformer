@@ -33,7 +33,7 @@ class NoChangesTest extends TestCase
         new $class();
 
         $originalFilePath = Util::getFilePath(Target::class);
-        $cachedFilePath   = Util::getTransformedFilePath(Target::class);
+        $cachedFilePath = Util::getTransformedFilePath(Target::class);
         $this->assertFileExists($originalFilePath);
         $this->assertFileDoesNotExist($cachedFilePath);
     }

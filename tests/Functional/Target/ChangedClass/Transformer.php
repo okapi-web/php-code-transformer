@@ -22,16 +22,10 @@ class Transformer extends TransformerClass
             if ($node instanceof StringLiteral) {
                 if ($node->getStringContentsText() === 'Hello World!') {
                     // Replace it with 'Hello World from Code Transformer!'
-                    $code->edit(
-                        $node->children,
-                        "'Hello World from Code Transformer!'",
-                    );
+                    $code->edit($node->children, "'Hello World from Code Transformer!'");
                 } else if ($node->getStringContentsText() === 'Hello Changed World!') {
                     // Replace it with 'Hello Changed World from Code Transformer!'
-                    $code->edit(
-                        $node->children,
-                        "'Hello Changed World from Code Transformer!'",
-                    );
+                    $code->edit($node->children, "'Hello Changed World from Code Transformer!'");
                 }
             }
         }

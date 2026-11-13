@@ -19,8 +19,8 @@ class CacheStateFactory
      * Map of cache state types to cache state classes.
      */
     public const CACHE_STATE_MAP = [
-        'TransformedCacheState'       => TransformedCacheState::class,
-        'EmptyResultCacheState'       => EmptyResultCacheState::class,
+        'TransformedCacheState' => TransformedCacheState::class,
+        'EmptyResultCacheState' => EmptyResultCacheState::class,
         'NoTransformationsCacheState' => NoTransformationsCacheState::class,
     ];
 
@@ -40,6 +40,7 @@ class CacheStateFactory
             if (!isset($cacheStateArray[CacheState::TYPE])) {
                 // @codeCoverageIgnoreStart
                 continue;
+
                 // @codeCoverageIgnoreEnd
             }
 
@@ -51,6 +52,7 @@ class CacheStateFactory
             try {
                 /** @var CacheState $cacheState */
                 $cacheState = DI::make(static::CACHE_STATE_MAP[$type]);
+
                 // @codeCoverageIgnoreStart
             } catch (TypeError) {
                 continue;
@@ -62,6 +64,7 @@ class CacheStateFactory
             if (!$cacheState) {
                 // @codeCoverageIgnoreStart
                 continue;
+
                 // @codeCoverageIgnoreEnd
             }
 

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\AutoloadInterceptor;
 
@@ -76,6 +77,7 @@ class ClassLoader extends ComposerClassLoader
         // @codeCoverageIgnoreStart
         // Not sure how to test this
         return false;
+
         // @codeCoverageIgnoreEnd
     }
 
@@ -120,18 +122,11 @@ class ClassLoader extends ComposerClassLoader
         if ($this->options->isDebug()) {
             // ...
         }
-
         // In production mode, use the cache without checking if it is fresh
-        elseif ($this->options->getEnvironment() === Environment::PRODUCTION
-            && $cacheState
-        ) {
+        elseif ($this->options->getEnvironment() === Environment::PRODUCTION && $cacheState) {
             // Use the cached file if transformations have been applied
             if ($cacheFilePath = $cacheState->getFilePath()) {
-                $this->classContainer->addClassContext(
-                    $filePath,
-                    $namespacedClass,
-                    $cacheFilePath,
-                );
+                $this->classContainer->addClassContext($filePath, $namespacedClass, $cacheFilePath);
 
                 // For cached files, the debugger will have trouble finding the
                 // original file, that's why we rewrite the file path with a PHP
@@ -143,25 +138,20 @@ class ClassLoader extends ComposerClassLoader
             // Or return the original file if no transformations have been applied
             return $filePath;
         }
-
         // In development mode, check if the cache is fresh
-        elseif ($this->options->getEnvironment() === Environment::DEVELOPMENT
+        elseif (
+            $this->options->getEnvironment() === Environment::DEVELOPMENT
             && $cacheState
             && $cacheState->isFresh()
         ) {
             if ($cacheFilePath = $cacheState->getFilePath()) {
-                $this->classContainer->addClassContext(
-                    $filePath,
-                    $namespacedClass,
-                    $cacheFilePath,
-                );
+                $this->classContainer->addClassContext($filePath, $namespacedClass, $cacheFilePath);
 
                 return $this->filterInjector->rewriteCached($filePath);
             }
 
             return $filePath;
         }
-
 
         // Check if the class should be transformed
         if (!$this->transformerMatcher->matchAndStore($namespacedClass, $filePath)) {

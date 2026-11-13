@@ -24,16 +24,10 @@ class CustomDependencyInjectionHandlerTest extends TestCase
 
         $output = ob_get_clean();
 
-        $this->assertStringContainsString(
-            'Generating transformer instance: ' . StringTransformer::class,
-            $output,
-        );
+        $this->assertStringContainsString('Generating transformer instance: ' . StringTransformer::class, $output);
 
         $class = new StringClass();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $class->test(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $class->test());
     }
 }

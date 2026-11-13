@@ -26,11 +26,8 @@ class ClassContainer
      *
      * @return void
      */
-    public function addClassContext(
-        string $path,
-        string $namespacedClass,
-        ?string $cachedFilePath = null,
-    ): void {
+    public function addClassContext(string $path, string $namespacedClass, ?string $cachedFilePath = null): void
+    {
         $this->classContext[$path] = [
             'namespacedClass' => $namespacedClass,
             'cachedFilePath' => $cachedFilePath,

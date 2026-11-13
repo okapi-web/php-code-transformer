@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Matcher;
 
@@ -53,7 +54,7 @@ class TransformerMatcher
         // Match the transformers
         $matchedTransformerContainers = [];
         foreach ($transformerContainers as $transformerContainer) {
-            $wildcardPatterns = (array)$transformerContainer->transformerInstance->getTargetClass();
+            $wildcardPatterns = (array) $transformerContainer->transformerInstance->getTargetClass();
 
             foreach ($wildcardPatterns as $wildcardPattern) {
                 $regex = Regex::fromWildcard($wildcardPattern);
@@ -81,33 +82,25 @@ class TransformerMatcher
 
         // Cache the result
         if (!$matchedTransformerContainers) {
-            $this->cacheEmptyResult(
-                $namespacedClass,
-                $filePath,
-            );
+            $this->cacheEmptyResult($namespacedClass, $filePath);
         }
 
-        return (bool)$matchedTransformerContainers;
+        return (bool) $matchedTransformerContainers;
     }
 
-    private function cacheEmptyResult(
-        string $namespacedClass,
-        string $filePath,
-    ): void {
-        $filePath   = Path::resolve($filePath);
+    private function cacheEmptyResult(string $namespacedClass, string $filePath): void
+    {
+        $filePath = Path::resolve($filePath);
         $cacheState = DI::make(EmptyResultCacheState::class, [
             CacheState::DATA => [
                 CacheState::ORIGINAL_FILE_PATH_KEY => $filePath,
-                CacheState::NAMESPACED_CLASS_KEY   => $namespacedClass,
-                CacheState::MODIFICATION_TIME_KEY  => filemtime($filePath),
+                CacheState::NAMESPACED_CLASS_KEY => $namespacedClass,
+                CacheState::MODIFICATION_TIME_KEY => filemtime($filePath),
             ],
         ]);
 
         // Set the cache state
-        $this->cacheStateManager->setCacheState(
-            $filePath,
-            $cacheState,
-        );
+        $this->cacheStateManager->setCacheState($filePath, $cacheState);
     }
 
     /**

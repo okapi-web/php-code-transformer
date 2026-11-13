@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Cache;
 
@@ -95,11 +96,7 @@ class CacheStateManager implements ServiceInterface
             return;
         }
 
-        Filesystem::mkdir(
-            $cacheDir,
-            $this->options->getCacheFileMode(),
-            recursive: true,
-        );
+        Filesystem::mkdir($cacheDir, $this->options->getCacheFileMode(), recursive: true);
     }
 
     /**
@@ -118,7 +115,7 @@ class CacheStateManager implements ServiceInterface
         // Read file
         $cacheFileContent = Filesystem::readFile($cacheFilePath);
 
-        $appDir   = $this->options->getAppDir();
+        $appDir = $this->options->getAppDir();
         $cacheDir = $this->options->getCacheDir();
 
         // Replace the keywords
@@ -136,9 +133,7 @@ class CacheStateManager implements ServiceInterface
 
         // Check the hash
         $hash = $this->getHash();
-        if (!isset($cacheStatesArray[static::HASH])
-            || $cacheStatesArray[static::HASH] !== $hash
-        ) {
+        if (!isset($cacheStatesArray[static::HASH]) || $cacheStatesArray[static::HASH] !== $hash) {
             return;
         }
         unset($cacheStatesArray[static::HASH]);
@@ -182,6 +177,7 @@ class CacheStateManager implements ServiceInterface
         if (empty($this->newCacheState)) {
             // @codeCoverageIgnoreStart
             return;
+
             // @codeCoverageIgnoreEnd
         }
 
@@ -190,7 +186,7 @@ class CacheStateManager implements ServiceInterface
 
         // Create the cache state array
         $cacheStateArray = array_map(
-            fn (CacheState $cacheState) => $cacheState->toArray(),
+            fn(CacheState $cacheState) => $cacheState->toArray(),
             array_merge($this->cacheState, $this->newCacheState),
         );
 
@@ -203,7 +199,7 @@ class CacheStateManager implements ServiceInterface
         // Semicolon
         $phpCode .= ';';
 
-        $appDir   = $this->options->getAppDir();
+        $appDir = $this->options->getAppDir();
         $cacheDir = $this->options->getCacheDir();
 
         // Replace the keywords
@@ -214,10 +210,7 @@ class CacheStateManager implements ServiceInterface
         );
 
         // Write file
-        Filesystem::writeFile(
-            $this->cachePaths->getCacheFilePath(),
-            $phpCode,
-        );
+        Filesystem::writeFile($this->cachePaths->getCacheFilePath(), $phpCode);
     }
 
     // endregion
@@ -242,10 +235,8 @@ class CacheStateManager implements ServiceInterface
      *
      * @return void
      */
-    public function setCacheState(
-        string     $filePath,
-        CacheState $cacheState,
-    ): void {
+    public function setCacheState(string $filePath, CacheState $cacheState): void
+    {
         $this->newCacheState[$filePath] = $cacheState;
     }
 }

@@ -22,10 +22,7 @@ class DeleteCacheFileTest extends TestCase
         $this->assertWillBeTransformed($class);
 
         $deleteCacheFileClass = new $class();
-        $this->assertSame(
-            'Hello World!',
-            $deleteCacheFileClass->test(),
-        );
+        $this->assertSame('Hello World!', $deleteCacheFileClass->test());
     }
 
     public function testCachedDeleteCacheFileClass(): void

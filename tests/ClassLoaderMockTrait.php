@@ -48,36 +48,22 @@ trait ClassLoaderMockTrait
     {
         $originalFilePath = Path::resolve($this->findOriginalClassMock($className));
 
-        $transformPath =
-            FilterInjector::PHP_FILTER_READ .
-            StreamFilter::FILTER_ID . '/resource=' .
-            $originalFilePath;
+        $transformPath = FilterInjector::PHP_FILTER_READ . StreamFilter::FILTER_ID . '/resource=' . $originalFilePath;
 
         $filePathMock = $this->findClassMock($className);
 
-        Assert::assertEquals(
-            $transformPath,
-            $filePathMock,
-            "$className will not be transformed",
-        );
+        Assert::assertEquals($transformPath, $filePathMock, "$className will not be transformed");
     }
 
     public function assertTransformerLoadedFromCache(string $className): void
     {
         $filePath = Path::resolve($this->findOriginalClassMock($className));
 
-        $cachePath =
-            FilterInjector::PHP_FILTER_READ .
-            CachedStreamFilter::CACHED_FILTER_ID . '/resource=' .
-            $filePath;
+        $cachePath = FilterInjector::PHP_FILTER_READ . CachedStreamFilter::CACHED_FILTER_ID . '/resource=' . $filePath;
 
         $filePathMock = $this->findClassMock($className);
 
-        Assert::assertEquals(
-            $cachePath,
-            $filePathMock,
-            $className . ' will not be loaded from cache',
-        );
+        Assert::assertEquals($cachePath, $filePathMock, $className . ' will not be loaded from cache');
     }
 
     public function assertTransformerNotApplied(string $className): void
@@ -85,10 +71,6 @@ trait ClassLoaderMockTrait
         $originalFilePath = Path::resolve($this->findOriginalClassMock($className));
         $filePathMock = $this->findClassMock($className);
 
-        Assert::assertEquals(
-            $originalFilePath,
-            $filePathMock,
-            $className . ' will be transformed',
-        );
+        Assert::assertEquals($originalFilePath, $filePathMock, $className . ' will be transformed');
     }
 }

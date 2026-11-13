@@ -26,18 +26,12 @@ class CachedFileAndDestructorTest extends TestCase
         $this->assertWillBeTransformed($class);
 
         $stringClass = new $class();
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $stringClass->test(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $stringClass->test());
 
-        $file    = Util::getFilePath(StringClass::class);
+        $file = Util::getFilePath(StringClass::class);
         $content = Filesystem::readFile($file);
 
-        $this->assertEquals(
-            $content,
-            StringTransformer::$originalSourceCode,
-        );
+        $this->assertEquals($content, StringTransformer::$originalSourceCode);
     }
 
     public function testCachedReplaceStringClass(): void
@@ -48,10 +42,7 @@ class CachedFileAndDestructorTest extends TestCase
         $this->assertTransformerLoadedFromCache($class);
 
         $stringClass = new $class();
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $stringClass->test(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $stringClass->test());
     }
 
     public function testCachedFile(): void
@@ -61,15 +52,9 @@ class CachedFileAndDestructorTest extends TestCase
         $this->assertFileExists($cachedFilePath);
         $file = Filesystem::readFile($cachedFilePath);
 
-        $this->assertStringContainsString(
-            'Hello from Code Transformer!',
-            $file,
-        );
+        $this->assertStringContainsString('Hello from Code Transformer!', $file);
 
-        $this->assertStringContainsString(
-            '$iAmAppended = true;',
-            $file,
-        );
+        $this->assertStringContainsString('$iAmAppended = true;', $file);
     }
 
     public function testDestructor(): void

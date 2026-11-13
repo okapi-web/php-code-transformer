@@ -31,10 +31,7 @@ class EnvironmentTest extends TestCase
 
         $helloWorldClass = new $class();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -49,10 +46,7 @@ class EnvironmentTest extends TestCase
 
         $helloWorldClass = new $class();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -61,14 +55,10 @@ class EnvironmentTest extends TestCase
     public function testChangedDevelopmentEnvironment(): void
     {
         // Change class
-        $classFilePath            = Util::getFilePath(HelloWorld::class);
+        $classFilePath = Util::getFilePath(HelloWorld::class);
         $originalClassFileContent = Filesystem::readFile($classFilePath);
 
-        $changedFileContent = str_replace(
-            'Hello World!',
-            'Hello Changed World!',
-            $originalClassFileContent,
-        );
+        $changedFileContent = str_replace('Hello World!', 'Hello Changed World!', $originalClassFileContent);
 
         sleep(1);
         Filesystem::writeFile($classFilePath, $changedFileContent);
@@ -81,10 +71,7 @@ class EnvironmentTest extends TestCase
             $this->assertWillBeTransformed($class);
 
             $classInstance = new $class();
-            $this->assertSame(
-                'Hello Changed World from Code Transformer!',
-                $classInstance->say(),
-            );
+            $this->assertSame('Hello Changed World from Code Transformer!', $classInstance->say());
         } catch (Throwable $e) {
             $exception = $e;
         }
@@ -111,10 +98,7 @@ class EnvironmentTest extends TestCase
 
         $helloWorldClass = new $class();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -129,10 +113,7 @@ class EnvironmentTest extends TestCase
 
         $helloWorldClass = new $class();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -141,14 +122,10 @@ class EnvironmentTest extends TestCase
     public function testChangedProductionEnvironment(): void
     {
         // Change class
-        $classFilePath            = Util::getFilePath(HelloWorld::class);
+        $classFilePath = Util::getFilePath(HelloWorld::class);
         $originalClassFileContent = Filesystem::readFile($classFilePath);
 
-        $changedFileContent = str_replace(
-            'Hello World!',
-            'Hello Changed World!',
-            $originalClassFileContent,
-        );
+        $changedFileContent = str_replace('Hello World!', 'Hello Changed World!', $originalClassFileContent);
 
         sleep(1);
         Filesystem::writeFile($classFilePath, $changedFileContent);
@@ -161,10 +138,7 @@ class EnvironmentTest extends TestCase
             $this->assertTransformerLoadedFromCache($class);
 
             $classInstance = new $class();
-            $this->assertSame(
-                'Hello from Code Transformer!',
-                $classInstance->say(),
-            );
+            $this->assertSame('Hello from Code Transformer!', $classInstance->say());
         } catch (Throwable $e) {
             $exception = $e;
         }

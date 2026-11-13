@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Cache;
 
@@ -61,15 +62,13 @@ class CachePaths
      */
     protected function appendToCachePath(string $file, string $append): string
     {
-        $appDir   = $this->options->getAppDir();
+        $appDir = $this->options->getAppDir();
         $cacheDir = $this->options->getCacheDir();
 
         // Append the string to the cache dir
         $newDir = Path::join($cacheDir, $append);
 
-        return Path::resolve(
-            str_replace($appDir, $newDir, $file),
-        );
+        return Path::resolve(str_replace($appDir, $newDir, $file));
     }
 
     /**

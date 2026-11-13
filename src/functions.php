@@ -17,11 +17,8 @@ if (!function_exists('str_starts_with_any_but_not')) {
      *              $needles, but not with any string in $negativeNeedles.
      *              Returns {@link false} otherwise.
      */
-    function str_starts_with_any_but_not(
-        string $haystack,
-        array  $needles,
-        array  $negativeNeedles = [],
-    ): bool {
+    function str_starts_with_any_but_not(string $haystack, array $needles, array $negativeNeedles = []): bool
+    {
         // Check for negative needles first
         foreach ($negativeNeedles as $negativeNeedle) {
             if (str_starts_with($haystack, $negativeNeedle)) {

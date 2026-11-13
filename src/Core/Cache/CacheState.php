@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Cache;
 
@@ -13,8 +14,8 @@ abstract class CacheState
     public const DATA = 'data';
 
     public const ORIGINAL_FILE_PATH_KEY = 'originalFilePath';
-    public const NAMESPACED_CLASS_KEY   = 'namespacedClass';
-    public const MODIFICATION_TIME_KEY  = 'modificationTime';
+    public const NAMESPACED_CLASS_KEY = 'namespacedClass';
+    public const MODIFICATION_TIME_KEY = 'modificationTime';
 
     public string $originalFilePath;
     protected string $namespacedClass;
@@ -25,9 +26,8 @@ abstract class CacheState
      *
      * @param array<string, (string|int|string[])> $data
      */
-    public function __construct(
-        array $data = [],
-    ) {
+    public function __construct(array $data = [])
+    {
         $this->setData($data);
     }
 
@@ -68,10 +68,7 @@ abstract class CacheState
     protected function getType(): string
     {
         // Return the class name without the namespace
-        return substr(
-            static::class,
-            strrpos(static::class, '\\') + 1,
-        );
+        return substr(static::class, strrpos(static::class, '\\') + 1);
     }
 
     /**
@@ -100,6 +97,7 @@ abstract class CacheState
         if (!$this->valid($cacheStateArray)) {
             // @codeCoverageIgnoreStart
             return null;
+
             // @codeCoverageIgnoreEnd
         }
 
@@ -122,6 +120,7 @@ abstract class CacheState
             if (!isset($cacheStateArray[$requiredKey])) {
                 // @codeCoverageIgnoreStart
                 return false;
+
                 // @codeCoverageIgnoreEnd
             }
         }
@@ -151,6 +150,7 @@ abstract class CacheState
         if (!file_exists($this->originalFilePath)) {
             // @codeCoverageIgnoreStart
             return false;
+
             // @codeCoverageIgnoreEnd
         }
 

@@ -22,15 +22,9 @@ class MultipleTransformersTest extends TestCase
 
         $multipleTransformersClass = new $class();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $multipleTransformersClass->test(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
 
-        $this->assertSame(
-            "You can't get me!",
-            $multipleTransformersClass->privateProperty,
-        );
+        $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
     }
 
     public function testCachedMultipleTransformers(): void
@@ -42,14 +36,8 @@ class MultipleTransformersTest extends TestCase
 
         $multipleTransformersClass = new $class();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $multipleTransformersClass->test(),
-        );
+        $this->assertSame('Hello from Code Transformer!', $multipleTransformersClass->test());
 
-        $this->assertSame(
-            "You can't get me!",
-            $multipleTransformersClass->privateProperty,
-        );
+        $this->assertSame("You can't get me!", $multipleTransformersClass->privateProperty);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpUnhandledExceptionInspection */
 namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Transformer;
 
@@ -34,7 +35,7 @@ class AddedTransformer1 extends Transformer
                     $code->editAt(
                         $rightOperand->getStartPosition() + 1,
                         $rightOperand->getWidth() - 2,
-                        'Code Transformer'
+                        'Code Transformer',
                     );
                 }
             }

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection ALL */
 namespace Okapi\CodeTransformer\Tests\Functional\Transformer\MultipleTransformer;
 

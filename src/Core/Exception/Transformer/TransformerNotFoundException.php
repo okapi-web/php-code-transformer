@@ -18,8 +18,6 @@ class TransformerNotFoundException extends TransformerException
      */
     public function __construct(string $transformerClass)
     {
-        parent::__construct(
-            'Transformer class "' . $transformerClass . '" does not exist.',
-        );
+        parent::__construct('Transformer class "' . $transformerClass . '" does not exist.');
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\StreamFilter;
 
@@ -45,13 +46,12 @@ class Metadata
      * @param mixed  $stream
      * @param string $originalSource
      */
-    public function __construct(
-        mixed  $stream,
-        string $originalSource,
-    ) {
+    public function __construct(mixed $stream, string $originalSource)
+    {
         if (!is_resource($stream)) {
             // @codeCoverageIgnoreStart
-            throw new InvalidStreamException;
+            throw new InvalidStreamException();
+
             // @codeCoverageIgnoreEnd
         }
 
@@ -62,23 +62,23 @@ class Metadata
             $metadata['uri'] = Path::resolve($matches[1]);
         }
 
-        $this->timed_out    = $metadata['timed_out'];
-        $this->blocked      = $metadata['blocked'];
-        $this->eof          = $metadata['eof'];
+        $this->timed_out = $metadata['timed_out'];
+        $this->blocked = $metadata['blocked'];
+        $this->eof = $metadata['eof'];
         $this->unread_bytes = $metadata['unread_bytes'];
-        $this->stream_type  = $metadata['stream_type'];
+        $this->stream_type = $metadata['stream_type'];
         $this->wrapper_type = $metadata['wrapper_type'];
         $this->wrapper_data = $metadata['wrapper_data'] ?? null;
-        $this->mode         = $metadata['mode'];
-        $this->seekable     = $metadata['seekable'];
-        $this->uri          = $metadata['uri'];
-        $this->crypto       = $metadata['crypto'] ?? null;
-        $this->mediatype    = $metadata['mediatype'] ?? null;
+        $this->mode = $metadata['mode'];
+        $this->seekable = $metadata['seekable'];
+        $this->uri = $metadata['uri'];
+        $this->crypto = $metadata['crypto'] ?? null;
+        $this->mediatype = $metadata['mediatype'] ?? null;
 
         $classContainer = DI::get(ClassContainer::class);
 
         $this->code = DI::make(Code::class, [
-            'source'          => $originalSource,
+            'source' => $originalSource,
             'namespacedClass' => $classContainer->getNamespacedClassByPath($this->uri),
         ]);
     }

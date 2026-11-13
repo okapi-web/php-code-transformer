@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpUnhandledExceptionInspection */
 namespace Okapi\CodeTransformer\Tests\Functional\Kernel\AlreadyInitializedKernel;
 

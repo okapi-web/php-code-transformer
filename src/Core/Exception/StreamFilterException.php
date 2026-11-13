@@ -7,6 +7,4 @@ namespace Okapi\CodeTransformer\Core\Exception;
  *
  * Base exception for all `StreamFilter` exceptions.
  */
-abstract class StreamFilterException extends CodeTransformerException
-{
-}
+abstract class StreamFilterException extends CodeTransformerException {}

@@ -20,7 +20,7 @@ class CodeChecker
         static $parser;
 
         if (!isset($parser)) {
-            $parser = new Parser;
+            $parser = new Parser();
         }
         $sourceFileNode = $parser->parseSourceFile($code);
         $errors = DiagnosticsProvider::getDiagnostics($sourceFileNode);

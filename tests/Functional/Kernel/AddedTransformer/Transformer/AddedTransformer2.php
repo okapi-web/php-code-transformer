@@ -31,11 +31,7 @@ class AddedTransformer2 extends Transformer
                 assert($rightOperand instanceof StringLiteral);
 
                 if ($leftOperandValue === '$hello') {
-                    $code->editAt(
-                        $rightOperand->getStartPosition() + 1,
-                        $rightOperand->getWidth() - 2,
-                        'Hello from'
-                    );
+                    $code->editAt($rightOperand->getStartPosition() + 1, $rightOperand->getWidth() - 2, 'Hello from');
                 }
             }
         }

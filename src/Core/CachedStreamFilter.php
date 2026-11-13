@@ -38,7 +38,7 @@ class CachedStreamFilter extends PhpStreamFilter implements ServiceInterface
             $consumed = strlen($this->data);
 
             $metadata = DI::make(Metadata::class, [
-                'stream'         => $this->stream,
+                'stream' => $this->stream,
                 'originalSource' => $this->data,
             ]);
 
