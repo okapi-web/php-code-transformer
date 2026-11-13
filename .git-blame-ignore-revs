@@ -1,0 +1,6 @@
+# Formatting-only commits ignored by git blame.
+# Enable locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+# Use git blame -w to help attribute reformatted whitespace to earlier commits.
+
+# style: format PHP source and tests with Mago
+69d6c6137d3d17a3237d51ca77767c59cbab205d
