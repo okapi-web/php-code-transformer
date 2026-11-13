@@ -3,6 +3,19 @@ name: PHP Tests
 on:
   push:
     branches: [ "master" ]
+  pull_request_review:
+    types: [ submitted, edited ]
+
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+    branches:
+      - master
+
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -10,45 +23,50 @@ permissions:
 jobs:
   run:
     runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 15
 
     strategy:
+      fail-fast: false
       matrix:
         operating-system: [ ubuntu-latest ]
-        php-version: [ '8.1', '8.2' ]
+        php-version: [ '8.1', '8.2', '8.3', '8.4', '8.5' ]
 
-    name: PHP ${{ matrix.php-version }} test on ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php-version }} tests on ${{ matrix.operating-system }}
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Install PHP
         id: php
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
+          coverage: xdebug
 
       - name: Check PHP version
         run: php -v
 
-      - name: Cache Composer packages
+      - name: Get Composer cache directory
         id: composer-cache
-        uses: actions/cache@v3
-        with:
-          path: vendor
-          key: ${{ runner.os }}-${{ matrix.operating-system }}-php-${{ steps.php.outputs.php-version }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.operating-system }}-php-${{ steps.php.outputs.php-version }}
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-      - if: steps.composer-cache.outputs.cache-hit != 'true'
-        name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress
+      - name: Cache Composer downloads
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('composer.json', 'composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: PHPUnit Tests
-        run: vendor/bin/phpunit --coverage-clover ./tests/coverage.xml --display-notices
+        run: vendor/bin/phpunit --testsuite=Tests --coverage-clover ./tests/coverage.xml --display-notices
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./tests/coverage.xml
