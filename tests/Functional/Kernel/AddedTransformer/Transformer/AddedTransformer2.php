@@ -9,6 +9,7 @@ use Microsoft\PhpParser\Node\StringLiteral;
 use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Target;
 use Okapi\CodeTransformer\Transformer;
 use Okapi\CodeTransformer\Transformer\Code;
+use PHPUnit\Framework\Assert;
 
 class AddedTransformer2 extends Transformer
 {
@@ -21,22 +22,27 @@ class AddedTransformer2 extends Transformer
     {
         $sourceFileNode = $code->getSourceFileNode();
 
-        foreach ($sourceFileNode->getDescendantNodes() as $node) {
-            if ($node instanceof ExpressionStatement) {
-                assert($node->expression instanceof AssignmentExpression);
-                $leftOperand = $node->expression->leftOperand;
-                assert($leftOperand instanceof Variable);
-                $leftOperandValue = $leftOperand->getText();
-                $rightOperand = $node->expression->rightOperand;
-                assert($rightOperand instanceof StringLiteral);
+        /** @var iterable<\Microsoft\PhpParser\Node> $nodes */
+        $nodes = $sourceFileNode->getDescendantNodes();
+        foreach ($nodes as $node) {
+            if (!$node instanceof ExpressionStatement) {
+                continue;
+            }
 
-                if ($leftOperandValue === '$hello') {
-                    $code->editAt(
-                        $rightOperand->getStartPosition() + 1,
-                        $rightOperand->getWidth() - 2,
-                        'Hello from'
-                    );
-                }
+            $expression = $node->expression;
+            Assert::assertInstanceOf(
+                AssignmentExpression::class,
+                $expression,
+                'The parser node must match this fixture.',
+            );
+            $leftOperand = $expression->leftOperand;
+            Assert::assertInstanceOf(Variable::class, $leftOperand, 'The parser node must match this fixture.');
+            $leftOperandValue = $leftOperand->getText();
+            $rightOperand = $expression->rightOperand;
+            Assert::assertInstanceOf(StringLiteral::class, $rightOperand, 'The parser node must match this fixture.');
+
+            if ($leftOperandValue === '$hello') {
+                $code->editAt($rightOperand->getStartPosition() + 1, $rightOperand->getWidth() - 2, 'Hello from');
             }
         }
     }

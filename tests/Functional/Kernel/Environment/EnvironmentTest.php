@@ -29,12 +29,9 @@ class EnvironmentTest extends TestCase
         $class = HelloWorld::class;
         $this->assertWillBeTransformed($class);
 
-        $helloWorldClass = new $class();
+        $helloWorldClass = new HelloWorld();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        static::assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -47,12 +44,9 @@ class EnvironmentTest extends TestCase
         $class = HelloWorld::class;
         $this->assertTransformerLoadedFromCache($class);
 
-        $helloWorldClass = new $class();
+        $helloWorldClass = new HelloWorld();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        static::assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -61,14 +55,10 @@ class EnvironmentTest extends TestCase
     public function testChangedDevelopmentEnvironment(): void
     {
         // Change class
-        $classFilePath            = Util::getFilePath(HelloWorld::class);
+        $classFilePath = Util::getFilePath(HelloWorld::class);
         $originalClassFileContent = Filesystem::readFile($classFilePath);
 
-        $changedFileContent = str_replace(
-            'Hello World!',
-            'Hello Changed World!',
-            $originalClassFileContent,
-        );
+        $changedFileContent = str_replace('Hello World!', 'Hello Changed World!', $originalClassFileContent);
 
         sleep(1);
         Filesystem::writeFile($classFilePath, $changedFileContent);
@@ -80,11 +70,8 @@ class EnvironmentTest extends TestCase
             $class = HelloWorld::class;
             $this->assertWillBeTransformed($class);
 
-            $classInstance = new $class();
-            $this->assertSame(
-                'Hello Changed World from Code Transformer!',
-                $classInstance->say(),
-            );
+            $classInstance = new HelloWorld();
+            static::assertSame('Hello Changed World from Code Transformer!', $classInstance->say());
         } catch (Throwable $e) {
             $exception = $e;
         }
@@ -109,12 +96,9 @@ class EnvironmentTest extends TestCase
         $class = HelloWorld::class;
         $this->assertWillBeTransformed($class);
 
-        $helloWorldClass = new $class();
+        $helloWorldClass = new HelloWorld();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        static::assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -127,12 +111,9 @@ class EnvironmentTest extends TestCase
         $class = HelloWorld::class;
         $this->assertTransformerLoadedFromCache($class);
 
-        $helloWorldClass = new $class();
+        $helloWorldClass = new HelloWorld();
 
-        $this->assertSame(
-            'Hello from Code Transformer!',
-            $helloWorldClass->say(),
-        );
+        static::assertSame('Hello from Code Transformer!', $helloWorldClass->say());
     }
 
     /**
@@ -141,14 +122,10 @@ class EnvironmentTest extends TestCase
     public function testChangedProductionEnvironment(): void
     {
         // Change class
-        $classFilePath            = Util::getFilePath(HelloWorld::class);
+        $classFilePath = Util::getFilePath(HelloWorld::class);
         $originalClassFileContent = Filesystem::readFile($classFilePath);
 
-        $changedFileContent = str_replace(
-            'Hello World!',
-            'Hello Changed World!',
-            $originalClassFileContent,
-        );
+        $changedFileContent = str_replace('Hello World!', 'Hello Changed World!', $originalClassFileContent);
 
         sleep(1);
         Filesystem::writeFile($classFilePath, $changedFileContent);
@@ -160,11 +137,8 @@ class EnvironmentTest extends TestCase
             $class = HelloWorld::class;
             $this->assertTransformerLoadedFromCache($class);
 
-            $classInstance = new $class();
-            $this->assertSame(
-                'Hello from Code Transformer!',
-                $classInstance->say(),
-            );
+            $classInstance = new HelloWorld();
+            static::assertSame('Hello from Code Transformer!', $classInstance->say());
         } catch (Throwable $e) {
             $exception = $e;
         }

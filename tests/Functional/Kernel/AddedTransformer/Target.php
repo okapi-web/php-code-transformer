@@ -9,6 +9,6 @@ class Target
         $hello = 'Hello';
         $world = 'World';
 
-        return "$hello $world!";
+        return "{$hello} {$world}!";
     }
 }

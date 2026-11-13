@@ -1,10 +1,10 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Container;
 
 use Closure;
-use Error;
-use Exception;
+use LogicException;
 use Okapi\CodeTransformer\Core\DI;
 use Okapi\CodeTransformer\Core\Exception\Transformer\InvalidTransformerClassException;
 use Okapi\CodeTransformer\Core\Exception\Transformer\InvalidTransformerClassNameException;
@@ -12,6 +12,7 @@ use Okapi\CodeTransformer\Core\Exception\Transformer\TransformerNotFoundExceptio
 use Okapi\CodeTransformer\Core\ServiceInterface;
 use Okapi\CodeTransformer\Transformer;
 use ReflectionClass as BaseReflectionClass;
+use Throwable;
 
 /**
  * # Transformer Manager
@@ -23,7 +24,7 @@ class TransformerManager implements ServiceInterface
     /**
      * The list of transformer class strings.
      *
-     * @var class-string<Transformer>[]
+     * @var array<array-key, mixed>
      */
     private array $transformers = [];
 
@@ -44,16 +45,13 @@ class TransformerManager implements ServiceInterface
     /**
      * Add transformers.
      *
-     * @param class-string<Transformer>[] $transformers
+     * @param array<array-key, mixed> $transformers
      *
      * @return void
      */
     public function addTransformers(array $transformers): void
     {
-        $this->transformers = array_merge(
-            $this->transformers,
-            $transformers,
-        );
+        $this->transformers = array_merge($this->transformers, $transformers);
     }
 
     // endregion
@@ -63,9 +61,8 @@ class TransformerManager implements ServiceInterface
     /**
      * @param null|(Closure(class-string<Transformer>): Transformer) $dependencyInjectionHandler
      */
-    public function registerCustomDependencyInjectionHandler(
-        ?Closure $dependencyInjectionHandler
-    ): void {
+    public function registerCustomDependencyInjectionHandler(?Closure $dependencyInjectionHandler): void
+    {
         $this->dependencyInjectionHandler = $dependencyInjectionHandler;
     }
 
@@ -76,44 +73,33 @@ class TransformerManager implements ServiceInterface
 
     private function loadTransformers(): void
     {
-        foreach ($this->transformers as $transformer) {
+        foreach (array_keys($this->transformers) as $transformerKey) {
+            /** @var mixed $transformer */
+            $transformer = $this->transformers[$transformerKey];
             $this->loadTransformer($transformer);
         }
     }
 
     /**
-     * @param class-string<Transformer> $transformerClassName
+     * @param mixed $transformerClassName
      *
      * @noinspection PhpUnhandledExceptionInspection
      * @noinspection PhpDocMissingThrowsInspection
      */
     private function loadTransformer(mixed $transformerClassName): void
     {
-        // Check if the transformer is already loaded
-        if (array_key_exists($transformerClassName, $this->transformerContainers)) {
-            // @codeCoverageIgnoreStart
-            return;
-            // @codeCoverageIgnoreEnd
+        if (!is_string($transformerClassName)) {
+            throw new InvalidTransformerClassNameException();
+        }
+        if (!class_exists($transformerClassName)) {
+            throw new TransformerNotFoundException($transformerClassName);
+        }
+        if (!is_subclass_of($transformerClassName, Transformer::class)) {
+            throw new InvalidTransformerClassException($transformerClassName);
         }
 
-        // Validate the transformer
-        if (gettype($transformerClassName) !== 'string') {
-            throw new InvalidTransformerClassNameException;
-        }
-
-        // Instantiate the transformer
-        if ($this->dependencyInjectionHandler) {
-            $transformerInstance = ($this->dependencyInjectionHandler)(
-                $transformerClassName,
-                ...($this->getAdditionalDependencyInjectionParams()),
-            );
-        } else {
-            try {
-                $transformerInstance = DI::make($transformerClassName);
-            } catch (Error|Exception) {
-                throw new TransformerNotFoundException($transformerClassName);
-            }
-        }
+        /** @var mixed $transformerInstance */
+        $transformerInstance = $this->instantiateTransformer($transformerClassName);
 
         // Validate the transformer
         $isTransformer = $transformerInstance instanceof Transformer;
@@ -130,9 +116,27 @@ class TransformerManager implements ServiceInterface
         $transformerRefClass = new BaseReflectionClass($transformerInstance);
 
         $filePath = $transformerRefClass->getFileName();
+        if ($filePath === false) {
+            throw new LogicException('A transformer must have a source file.');
+        }
         $this->transformerContainers[$filePath] = $transformerContainer;
     }
 
+    /** @param class-string<Transformer> $class */
+    private function instantiateTransformer(string $class): mixed
+    {
+        if ($this->dependencyInjectionHandler !== null) {
+            return ($this->dependencyInjectionHandler)($class, ...$this->getAdditionalDependencyInjectionParams());
+        }
+
+        try {
+            return DI::make($class);
+        } catch (Throwable) {
+            throw new TransformerNotFoundException($class);
+        }
+    }
+
+    /** @return list<mixed> */
     protected function getAdditionalDependencyInjectionParams(): array
     {
         return [];
@@ -143,7 +147,7 @@ class TransformerManager implements ServiceInterface
     /**
      * Get the transformers.
      *
-     * @return class-string<Transformer>[]
+     * @return array<array-key, mixed>
      */
     public function getTransformers(): array
     {

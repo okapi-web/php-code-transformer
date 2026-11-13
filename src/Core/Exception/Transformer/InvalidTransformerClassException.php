@@ -20,8 +20,6 @@ class InvalidTransformerClassException extends TransformerException
      */
     public function __construct(string $transformerClass)
     {
-        parent::__construct(
-            'Transformer class "' . $transformerClass . '" does not extend the Transformer class.',
-        );
+        parent::__construct('Transformer class "' . $transformerClass . '" does not extend the Transformer class.');
     }
 }

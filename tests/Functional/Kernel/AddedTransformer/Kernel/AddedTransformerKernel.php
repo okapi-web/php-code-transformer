@@ -6,6 +6,7 @@ use Okapi\CodeTransformer\Tests\Functional\Kernel\AddedTransformer\Transformer\A
 
 class AddedTransformerKernel extends BeforeAddedTransformerKernel
 {
+    /** @var array<array-key, mixed> */
     protected array $addedTransformers = [
         AddedTransformer2::class,
     ];

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Cache\CacheState;
 
@@ -15,6 +16,10 @@ class TransformedCacheState extends CacheState
     public const TRANSFORMER_FILE_PATHS_KEY = 'transformerFilePaths';
 
     public string $transformedFilePath;
+
+    /**
+     * @var string[]
+     */
     public array $transformerFilePaths;
 
     /**
@@ -22,13 +27,10 @@ class TransformedCacheState extends CacheState
      */
     public function getRequiredKeys(): array
     {
-        return array_merge(
-            parent::getRequiredKeys(),
-            [
-                static::TRANSFORMED_FILE_PATH_KEY,
-                static::TRANSFORMER_FILE_PATHS_KEY,
-            ]
-        );
+        return array_merge(parent::getRequiredKeys(), [
+            static::TRANSFORMED_FILE_PATH_KEY,
+            static::TRANSFORMER_FILE_PATHS_KEY,
+        ]);
     }
 
     /**
@@ -50,12 +52,15 @@ class TransformedCacheState extends CacheState
             if (!file_exists($transformerFilePath)) {
                 // @codeCoverageIgnoreStart
                 return false;
+
                 // @codeCoverageIgnoreEnd
             }
 
-            if (filemtime($transformerFilePath) > $this->modificationTime) {
+            $modified = filemtime($transformerFilePath);
+            if ($modified === false || $modified > $this->modificationTime) {
                 // @codeCoverageIgnoreStart
                 return false;
+
                 // @codeCoverageIgnoreEnd
             }
         }

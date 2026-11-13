@@ -9,6 +9,4 @@ use RuntimeException;
  *
  * Base exception for all Code Transformer exceptions.
  */
-abstract class CodeTransformerException extends RuntimeException
-{
-}
+abstract class CodeTransformerException extends RuntimeException {}

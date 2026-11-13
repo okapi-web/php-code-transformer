@@ -18,8 +18,6 @@ class InvalidStreamException extends StreamFilterException
      */
     public function __construct()
     {
-        parent::__construct(
-            'The stream must be a valid resource.',
-        );
+        parent::__construct('The stream must be a valid resource.');
     }
 }

@@ -35,21 +35,11 @@ class FilterInjector
     public function rewrite(string $filePath): string
     {
         // Create a filter for the given file
-        return sprintf(
-            "%s%s/resource=%s",
-            static::PHP_FILTER_READ,
-            StreamFilter::FILTER_ID,
-            $filePath
-        );
+        return sprintf('%s%s/resource=%s', static::PHP_FILTER_READ, StreamFilter::FILTER_ID, $filePath);
     }
 
     public function rewriteCached(string $filePath): string
     {
-        return sprintf(
-            "%s%s/resource=%s",
-            static::PHP_FILTER_READ,
-            CachedStreamFilter::CACHED_FILTER_ID,
-            $filePath,
-        );
+        return sprintf('%s%s/resource=%s', static::PHP_FILTER_READ, CachedStreamFilter::CACHED_FILTER_ID, $filePath);
     }
 }

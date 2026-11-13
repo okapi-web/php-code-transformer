@@ -3,10 +3,12 @@
 namespace Okapi\CodeTransformer\Core;
 
 use Composer\Autoload\ClassLoader;
+use LogicException;
 use Okapi\CodeTransformer\CodeTransformerKernel;
 use Okapi\CodeTransformer\Core\Options\Environment;
 use Okapi\Path\Path;
 use ReflectionClass;
+use RuntimeException;
 
 /**
  * # Options
@@ -35,7 +37,7 @@ class Options implements ServiceInterface
     /**
      * The exclude paths.
      *
-     * @var array
+     * @var string[]
      */
     private array $excludePaths;
 
@@ -80,24 +82,32 @@ class Options implements ServiceInterface
      * @param int|null    $cacheFileMode
      * @param bool        $debug
      * @param Environment $environment
+     * @param string[] $excludePaths
      */
     public function setOptions(
-        ?string     $cacheDir,
-        ?int        $cacheFileMode,
-        bool        $debug,
+        ?string $cacheDir,
+        ?int $cacheFileMode,
+        bool $debug,
         Environment $environment,
-        array       $excludePaths = [],
+        array $excludePaths = [],
     ): void {
         $composerRef = new ReflectionClass(ClassLoader::class);
         $composerDir = $composerRef->getFileName();
-        $rootDir     = Path::resolve(Path::join($composerDir, '../../..'));
+        if ($composerDir === false) {
+            throw new LogicException('Composer must have a source file.');
+        }
 
-        $this->appDir        = $rootDir;
-        $this->cacheDir      = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
-        $this->cacheFileMode = $cacheFileMode ?? (0777 & ~umask());
-        $this->debug         = $debug;
-        $this->environment   = $environment;
-        $this->excludePaths  = $excludePaths;
+        $rootDir = Path::resolve(Path::join($composerDir, '../../..'));
+        if (!is_string($rootDir)) {
+            throw new RuntimeException('Cannot resolve the application directory.');
+        }
+
+        $this->appDir = $rootDir;
+        $this->cacheDir = $cacheDir ?? Path::join($rootDir, $this->defaultCacheDir);
+        $this->cacheFileMode = $cacheFileMode ?? 0o777 & ~umask();
+        $this->debug = $debug;
+        $this->environment = $environment;
+        $this->excludePaths = $excludePaths;
     }
 
     // endregion
@@ -132,6 +142,8 @@ class Options implements ServiceInterface
 
     /**
      * Get the exclude paths.
+     *
+     * @return string[]
      */
     public function getExcludePaths(): array
     {

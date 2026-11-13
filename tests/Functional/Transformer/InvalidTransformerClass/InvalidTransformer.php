@@ -7,6 +7,7 @@ use Okapi\CodeTransformer\Transformer\Code;
 
 class InvalidTransformer
 {
+    /** @return string|string[] */
     public function getTargetClass(): string|array
     {
         return StringClass::class;

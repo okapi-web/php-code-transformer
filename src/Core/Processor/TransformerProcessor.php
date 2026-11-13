@@ -1,8 +1,10 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Processor;
 
 use DI\Attribute\Inject;
+use LogicException;
 use Okapi\CodeTransformer\Core\Cache\CachePaths;
 use Okapi\CodeTransformer\Core\Cache\CacheState;
 use Okapi\CodeTransformer\Core\Cache\CacheState\NoTransformationsCacheState;
@@ -50,41 +52,31 @@ class TransformerProcessor
         $transformerContainers = $this->transformerMatcher->getMatchedTransformerContainers($namespacedClass);
         $this->processTransformers($metadata, $transformerContainers);
 
-        $originalFilePath    = $metadata->uri;
+        $originalFilePath = $metadata->uri;
         $transformedFilePath = $this->cachePaths->getTransformedCachePath($originalFilePath);
-        $transformed         = $metadata->code->hasChanges();
+        $transformed = $metadata->code->hasChanges();
 
         // Save the transformed code
         if ($transformed) {
-            Filesystem::writeFile(
-                $transformedFilePath,
-                $metadata->code->getNewSource(),
-            );
+            Filesystem::writeFile($transformedFilePath, $metadata->code->getNewSource());
         }
 
         // Update the cache state
         $modificationTime = $_SERVER['REQUEST_TIME'] ?? time();
+        $cacheStateClass = NoTransformationsCacheState::class;
+        $data = [
+            CacheState::ORIGINAL_FILE_PATH_KEY => $originalFilePath,
+            CacheState::NAMESPACED_CLASS_KEY => $namespacedClass,
+            CacheState::MODIFICATION_TIME_KEY => $modificationTime,
+        ];
         if ($transformed) {
-            $transformerFilePaths = $this->getTransformerFilePaths($transformerContainers);
-
-            $cacheState = DI::make(TransformedCacheState::class, [
-                CacheState::DATA => [
-                    CacheState::ORIGINAL_FILE_PATH_KEY                => $originalFilePath,
-                    CacheState::NAMESPACED_CLASS_KEY                  => $namespacedClass,
-                    CacheState::MODIFICATION_TIME_KEY                 => $modificationTime,
-                    TransformedCacheState::TRANSFORMED_FILE_PATH_KEY  => $transformedFilePath,
-                    TransformedCacheState::TRANSFORMER_FILE_PATHS_KEY => $transformerFilePaths,
-                ],
-            ]);
-        } else {
-            $cacheState = DI::make(NoTransformationsCacheState::class, [
-                CacheState::DATA => [
-                    CacheState::ORIGINAL_FILE_PATH_KEY => $originalFilePath,
-                    CacheState::NAMESPACED_CLASS_KEY   => $namespacedClass,
-                    CacheState::MODIFICATION_TIME_KEY  => $modificationTime,
-                ],
-            ]);
+            $cacheStateClass = TransformedCacheState::class;
+            $data[TransformedCacheState::TRANSFORMED_FILE_PATH_KEY] = $transformedFilePath;
+            $data[TransformedCacheState::TRANSFORMER_FILE_PATHS_KEY] =
+                $this->getTransformerFilePaths($transformerContainers);
         }
+
+        $cacheState = DI::make($cacheStateClass, [CacheState::DATA => $data]);
 
         $this->cacheStateManager->setCacheState($originalFilePath, $cacheState);
     }
@@ -97,22 +89,18 @@ class TransformerProcessor
      *
      * @return void
      */
-    protected function processTransformers(
-        Metadata $metadata,
-        array    $transformerContainers,
-    ): void {
+    protected function processTransformers(Metadata $metadata, array $transformerContainers): void
+    {
         // Sort the transformers by priority
         usort(
             $transformerContainers,
-            function (TransformerContainer $a, TransformerContainer $b) {
-                return $a->transformerInstance->order <=> $b->transformerInstance->order;
-            },
+            static fn(TransformerContainer $a, TransformerContainer $b) => (
+                $a->transformerInstance->order <=> $b->transformerInstance->order
+            ),
         );
 
         foreach ($transformerContainers as $transformerContainer) {
-            $transformerContainer->transformerInstance->transform(
-                $metadata->code,
-            );
+            $transformerContainer->transformerInstance->transform($metadata->code);
         }
     }
 
@@ -125,16 +113,18 @@ class TransformerProcessor
      *
      * @noinspection PhpDocMissingThrowsInspection Handled by TransformerNotFoundException
      */
-    protected function getTransformerFilePaths(
-        array $transformerContainers,
-    ): array {
+    protected function getTransformerFilePaths(array $transformerContainers): array
+    {
         return array_map(
-            function (TransformerContainer $transformerContainer) {
+            static function (TransformerContainer $transformerContainer) {
                 /** @noinspection PhpUnhandledExceptionInspection Handled by TransformerNotFoundException */
-                $reflection = new BaseReflectionClass(
-                    $transformerContainer->transformerInstance
-                );
-                return $reflection->getFileName();
+                $reflection = new BaseReflectionClass($transformerContainer->transformerInstance);
+                $file = $reflection->getFileName();
+                if ($file === false) {
+                    throw new LogicException('A transformer must have a source file.');
+                }
+
+                return $file;
             },
             $transformerContainers,
         );

@@ -1,6 +1,9 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core\Cache;
+
+use ReflectionProperty;
 
 /**
  * # Cache State
@@ -13,8 +16,8 @@ abstract class CacheState
     public const DATA = 'data';
 
     public const ORIGINAL_FILE_PATH_KEY = 'originalFilePath';
-    public const NAMESPACED_CLASS_KEY   = 'namespacedClass';
-    public const MODIFICATION_TIME_KEY  = 'modificationTime';
+    public const NAMESPACED_CLASS_KEY = 'namespacedClass';
+    public const MODIFICATION_TIME_KEY = 'modificationTime';
 
     public string $originalFilePath;
     protected string $namespacedClass;
@@ -23,18 +26,17 @@ abstract class CacheState
     /**
      * CacheState constructor.
      *
-     * @param array<string, (string|int|string[])> $data
+     * @param array<array-key, mixed> $data
      */
-    public function __construct(
-        array $data = [],
-    ) {
+    public function __construct(array $data = [])
+    {
         $this->setData($data);
     }
 
     /**
      * Get the cache state as an array.
      *
-     * @return array<string, (string|int|string[])>
+     * @return array<array-key, mixed>
      */
     public function toArray(): array
     {
@@ -47,14 +49,17 @@ abstract class CacheState
     /**
      * Get the cache state as an array.
      *
-     * @return array<string, (string|int|string[])>
+     * @return array<array-key, mixed>
      */
     private function getAllData(): array
     {
         $data = [];
 
         foreach ($this->getRequiredKeys() as $key) {
-            $data[$key] = $this->{$key};
+            $property = new ReflectionProperty($this, $key);
+            /** @var mixed $value */
+            $value = $property->getValue($this);
+            $data[$key] = $value;
         }
 
         return $data;
@@ -68,10 +73,8 @@ abstract class CacheState
     protected function getType(): string
     {
         // Return the class name without the namespace
-        return substr(
-            static::class,
-            strrpos(static::class, '\\') + 1,
-        );
+        $separator = strrpos(static::class, '\\');
+        return $separator === false ? static::class : substr(static::class, $separator + 1);
     }
 
     /**
@@ -91,7 +94,7 @@ abstract class CacheState
     /**
      * Create a cache state if it is valid.
      *
-     * @param array $cacheStateArray
+     * @param array<array-key, mixed> $cacheStateArray
      *
      * @return self|null
      */
@@ -100,6 +103,7 @@ abstract class CacheState
         if (!$this->valid($cacheStateArray)) {
             // @codeCoverageIgnoreStart
             return null;
+
             // @codeCoverageIgnoreEnd
         }
 
@@ -111,7 +115,7 @@ abstract class CacheState
     /**
      * Validate the cache state.
      *
-     * @param array<string, (string|int|string[])> $cacheStateArray
+     * @param array<array-key, mixed> $cacheStateArray
      *
      * @return bool
      */
@@ -122,6 +126,7 @@ abstract class CacheState
             if (!isset($cacheStateArray[$requiredKey])) {
                 // @codeCoverageIgnoreStart
                 return false;
+
                 // @codeCoverageIgnoreEnd
             }
         }
@@ -132,12 +137,17 @@ abstract class CacheState
     /**
      * Set the cache state data.
      *
-     * @param array<string, (string|int|string[])> $cacheStateArray
+     * @param array<array-key, mixed> $cacheStateArray
      */
     private function setData(array $cacheStateArray): void
     {
-        foreach ($cacheStateArray as $key => $value) {
-            $this->{$key} = $value;
+        foreach (array_keys($cacheStateArray) as $key) {
+            /** @var mixed $value */
+            $value = $cacheStateArray[$key];
+            if (!is_string($key) || !property_exists($this, $key)) {
+                continue;
+            }
+            (new ReflectionProperty($this, $key))->setValue($this, $value);
         }
     }
 
@@ -151,10 +161,12 @@ abstract class CacheState
         if (!file_exists($this->originalFilePath)) {
             // @codeCoverageIgnoreStart
             return false;
+
             // @codeCoverageIgnoreEnd
         }
 
-        if (filemtime($this->originalFilePath) > $this->modificationTime) {
+        $modified = filemtime($this->originalFilePath);
+        if ($modified === false || $modified > $this->modificationTime) {
             return false;
         }
 

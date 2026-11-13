@@ -18,10 +18,14 @@ class UnPrivateTransformer extends Transformer
     {
         $sourceFileNode = $code->getSourceFileNode();
 
-        foreach ($sourceFileNode->getDescendantTokens() as $token) {
-            if ($token->kind === TokenKind::PrivateKeyword) {
-                $code->edit($token, 'public');
+        /** @var iterable<\Microsoft\PhpParser\Token> $tokens */
+        $tokens = $sourceFileNode->getDescendantTokens();
+        foreach ($tokens as $token) {
+            if ($token->kind !== TokenKind::PrivateKeyword) {
+                continue;
             }
+
+            $code->edit($token, 'public');
         }
     }
 }

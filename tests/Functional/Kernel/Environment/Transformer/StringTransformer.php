@@ -18,22 +18,22 @@ class StringTransformer extends Transformer
     {
         $sourceFileNode = $code->getSourceFileNode();
 
-        foreach ($sourceFileNode->getDescendantNodes() as $node) {
+        /** @var iterable<\Microsoft\PhpParser\Node> $nodes */
+        $nodes = $sourceFileNode->getDescendantNodes();
+        foreach ($nodes as $node) {
             // Find 'Hello World!' string
-            if ($node instanceof StringLiteral) {
-                if ($node->getStringContentsText() === 'Hello World!') {
-                    // Replace it with 'Hello from Code Transformer!'
-                    $code->edit(
-                        $node->children,
-                        "'Hello from Code Transformer!'",
-                    );
-                } else if ($node->getStringContentsText() === 'Hello Changed World!') {
-                    // Replace it with 'Hello Changed World from Code Transformer!'
-                    $code->edit(
-                        $node->children,
-                        "'Hello Changed World from Code Transformer!'",
-                    );
-                }
+            if (!$node instanceof StringLiteral) {
+                continue;
+            }
+
+            if ($node->getStringContentsText() === 'Hello World!') {
+                // Replace it with 'Hello from Code Transformer!'
+                $code->edit($node, "'Hello from Code Transformer!'");
+                continue;
+            }
+            if ($node->getStringContentsText() === 'Hello Changed World!') {
+                // Replace it with 'Hello Changed World from Code Transformer!'
+                $code->edit($node, "'Hello Changed World from Code Transformer!'");
             }
         }
     }

@@ -3,6 +3,7 @@
 namespace Okapi\CodeTransformer\Core;
 
 use Okapi\CodeTransformer\Core\AutoloadInterceptor\ClassContainer;
+use Okapi\CodeTransformer\Core\Exception\StreamFilter\InvalidStreamException;
 use Okapi\CodeTransformer\Core\StreamFilter\Metadata;
 use Okapi\Filesystem\Filesystem;
 use php_user_filter as PhpStreamFilter;
@@ -28,17 +29,27 @@ class CachedStreamFilter extends PhpStreamFilter implements ServiceInterface
 
     public function filter($in, $out, &$consumed, bool $closing): int
     {
+        /** @var mixed $stream */
+        $stream = $this->stream;
+        if (!is_resource($stream)) {
+            throw new InvalidStreamException();
+        }
+
         // Read stream until EOF
-        while ($bucket = stream_bucket_make_writeable($in)) {
+        while (true) {
+            $bucket = stream_bucket_make_writeable($in);
+            if ($bucket === null) {
+                break;
+            }
             $this->data .= $bucket->data;
         }
 
         // If stream is closed, return the cached file
-        if ($closing || feof($this->stream)) {
+        if ($closing || feof($stream)) {
             $consumed = strlen($this->data);
 
             $metadata = DI::make(Metadata::class, [
-                'stream'         => $this->stream,
+                'stream' => $this->stream,
                 'originalSource' => $this->data,
             ]);
 
@@ -47,7 +58,7 @@ class CachedStreamFilter extends PhpStreamFilter implements ServiceInterface
 
             $source = Filesystem::readFile($cachedFilePath);
 
-            $bucket = stream_bucket_new($this->stream, $source);
+            $bucket = stream_bucket_new($stream, $source);
             stream_bucket_append($out, $bucket);
 
             // Pass the (cached) source code to the next filter

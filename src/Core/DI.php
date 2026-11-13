@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer\Core;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use LogicException;
 use Okapi\Singleton\Singleton;
 
 /**
@@ -69,7 +70,7 @@ class DI implements ServiceInterface
     /**
      * Get an (already initialized) instance of the given class.
      *
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $class
      *
@@ -77,26 +78,32 @@ class DI implements ServiceInterface
      *
      * @noinspection PhpDocMissingThrowsInspection
      */
-    public static function get(string $class)
+    public static function get(string $class): mixed
     {
         $instance = static::getInstance();
         $instance->ensureInitialized();
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        return $instance->container->get($class);
+        /** @var mixed $service */
+        $service = $instance->container->get($class);
+        if (!$service instanceof $class) {
+            throw new LogicException('The container must return the requested class.');
+        }
+
+        return $service;
     }
 
     /**
      * Replace an existing instance of the given class.
      *
      * @param string $class
-     * @param        $value
+     * @param mixed  $value
      *
      * @return void
      *
      * @codeCoverageIgnore
      */
-    public static function set(string $class, $value): void
+    public static function set(string $class, mixed $value): void
     {
         $instance = static::getInstance();
         $instance->ensureInitialized();
@@ -109,21 +116,27 @@ class DI implements ServiceInterface
      *
      * This method behaves like a factory.
      *
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $class
-     * @param array           $parameters
+     * @param array<string, mixed> $parameters
      *
      * @return T
      *
      * @noinspection PhpDocMissingThrowsInspection
      */
-    public static function make(string $class, array $parameters = [])
+    public static function make(string $class, array $parameters = []): mixed
     {
         $instance = static::getInstance();
         $instance->ensureInitialized();
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        return $instance->container->make($class, $parameters);
+        /** @var mixed $service */
+        $service = $instance->container->make($class, $parameters);
+        if (!$service instanceof $class) {
+            throw new LogicException('The container must return the requested class.');
+        }
+
+        return $service;
     }
 }

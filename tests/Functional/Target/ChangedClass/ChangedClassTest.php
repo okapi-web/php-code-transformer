@@ -14,8 +14,6 @@ class ChangedClassTest extends TestCase
 {
     use ClassLoaderMockTrait;
 
-    private static string $classFileContent;
-
     public function testChangedClass(): void
     {
         Util::clearCache();
@@ -24,24 +22,17 @@ class ChangedClassTest extends TestCase
         $class = Target::class;
         $this->assertWillBeTransformed($class);
 
-        $changedClass = new $class();
-        $this->assertSame(
-            'Hello World from Code Transformer!',
-            $changedClass->test(),
-        );
+        $changedClass = new Target();
+        static::assertSame('Hello World from Code Transformer!', $changedClass->test());
     }
 
     public function testCachedChangedClass(): void
     {
         // Change class
-        $classFilePath            = Util::getFilePath(Target::class);
+        $classFilePath = Util::getFilePath(Target::class);
         $originalClassFileContent = Filesystem::readFile($classFilePath);
 
-        $changedFileContent = str_replace(
-            'Hello World!',
-            'Hello Changed World!',
-            $originalClassFileContent,
-        );
+        $changedFileContent = str_replace('Hello World!', 'Hello Changed World!', $originalClassFileContent);
 
         sleep(1);
         Filesystem::writeFile($classFilePath, $changedFileContent);
@@ -53,11 +44,8 @@ class ChangedClassTest extends TestCase
             $class = Target::class;
             $this->assertWillBeTransformed($class);
 
-            $classInstance = new $class();
-            $this->assertSame(
-                'Hello Changed World from Code Transformer!',
-                $classInstance->test(),
-            );
+            $classInstance = new Target();
+            static::assertSame('Hello Changed World from Code Transformer!', $classInstance->test());
         } catch (Throwable $e) {
             $exception = $e;
         }

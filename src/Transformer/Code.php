@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Transformer;
 
@@ -38,7 +39,7 @@ class Code
     /**
      * List of strings to be appended to the source code.
      *
-     * @var array
+     * @var list<string>
      */
     private array $appendList = [];
 
@@ -80,11 +81,7 @@ class Code
     public function edit(Token|Node $token, string $replacement): void
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->stringMutator->edit(
-            $token->getStartPosition(),
-            $token->getWidth(),
-            $replacement,
-        );
+        $this->stringMutator->edit($token->getStartPosition(), $token->getWidth(), $replacement);
     }
 
     /**
@@ -96,16 +93,9 @@ class Code
      *
      * @return void
      */
-    public function editAt(
-        int    $startPosition,
-        int    $width,
-        string $replacement,
-    ): void {
-        $this->stringMutator->edit(
-            $startPosition,
-            $width,
-            $replacement,
-        );
+    public function editAt(int $startPosition, int $width, string $replacement): void
+    {
+        $this->stringMutator->edit($startPosition, $width, $replacement);
     }
 
     /**
@@ -142,7 +132,7 @@ class Code
     public function getSourceFileNode(): SourceFileNode
     {
         if (!isset($this->sourceFileNode)) {
-            $this->sourceFileNode = (new Parser)->parseSourceFile($this->source);
+            $this->sourceFileNode = (new Parser())->parseSourceFile($this->source);
         }
 
         return $this->sourceFileNode;
@@ -155,9 +145,7 @@ class Code
      */
     public function getReflectionClass(): BetterReflectionClass
     {
-        return $this->reflectionHelper->getReflectionClass(
-            $this->getNamespacedClass(),
-        );
+        return $this->reflectionHelper->getReflectionClass($this->getNamespacedClass());
     }
 
     /**
@@ -172,6 +160,7 @@ class Code
             // @codeCoverageIgnoreStart
             // This is actually being run, but it's not being counted for some reason
             return $this->source;
+
             // @codeCoverageIgnoreEnd
         }
 
@@ -198,8 +187,7 @@ class Code
      */
     public function hasChanges(): bool
     {
-        return count($this->stringMutator->edits) > 0
-            || count($this->appendList) > 0;
+        return count($this->stringMutator->edits) > 0 || count($this->appendList) > 0;
     }
 
     /**
@@ -219,9 +207,7 @@ class Code
      */
     public function getClassName(): string
     {
-        return substr(
-            $this->namespacedClass,
-            strrpos($this->namespacedClass, '\\') + 1,
-        );
+        $separator = strrpos($this->namespacedClass, '\\');
+        return $separator === false ? $this->namespacedClass : substr($this->namespacedClass, $separator + 1);
     }
 }

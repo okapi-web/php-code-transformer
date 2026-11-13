@@ -21,11 +21,8 @@ class DeleteCacheFileTest extends TestCase
         $class = Target::class;
         $this->assertWillBeTransformed($class);
 
-        $deleteCacheFileClass = new $class();
-        $this->assertSame(
-            'Hello World!',
-            $deleteCacheFileClass->test(),
-        );
+        $deleteCacheFileClass = new Target();
+        static::assertSame('Hello World!', $deleteCacheFileClass->test());
     }
 
     public function testCachedDeleteCacheFileClass(): void
@@ -34,16 +31,16 @@ class DeleteCacheFileTest extends TestCase
 
         $cachedFilePath = Util::getTransformedFilePath(Target::class);
 
-        $this->assertFileExists($cachedFilePath);
+        static::assertFileExists($cachedFilePath);
         Filesystem::rm($cachedFilePath);
-        $this->assertFileDoesNotExist($cachedFilePath);
+        static::assertFileDoesNotExist($cachedFilePath);
 
         $class = Target::class;
         $this->assertWillBeTransformed($class);
 
-        $deleteCacheFileClass = new $class();
-        $this->assertSame('Hello World!', $deleteCacheFileClass->test());
+        $deleteCacheFileClass = new Target();
+        static::assertSame('Hello World!', $deleteCacheFileClass->test());
 
-        $this->assertFileExists($cachedFilePath);
+        static::assertFileExists($cachedFilePath);
     }
 }

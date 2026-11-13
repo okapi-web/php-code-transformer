@@ -2,6 +2,8 @@
 
 namespace Okapi\CodeTransformer\Core\Util;
 
+use InvalidArgumentException;
+
 /**
  * A utility class for mutating strings.
  *
@@ -21,7 +23,7 @@ class StringMutator
     /**
      * The edits to apply to the string.
      *
-     * @var array{int, int, string}[] Start position, length, replacement
+     * @var list<array{int, non-negative-int, string}> Start position, length, replacement
      */
     public array $edits = [];
 
@@ -46,7 +48,12 @@ class StringMutator
      */
     public function edit(int $start, int $length, string $replacement): self
     {
+        if ($length < 0) {
+            throw new InvalidArgumentException('Edit length must not be negative.');
+        }
+
         $this->edits[] = [$start, $length, $replacement];
+
         return $this;
     }
 
@@ -58,9 +65,7 @@ class StringMutator
     public function getMutatedString(): string
     {
         // Sort the edits by start position.
-        usort($this->edits, function ($a, $b) {
-            return $a[0] <=> $b[0];
-        });
+        usort($this->edits, static fn($a, $b) => $a[0] <=> $b[0]);
 
         // Apply the edits.
         $result = $this->string;

@@ -20,7 +20,7 @@ class NoChangesTest extends TestCase
         $class = Target::class;
         $this->assertWillBeTransformed($class);
 
-        new $class();
+        new Target();
     }
 
     public function testCachedNoChangesClass(): void
@@ -30,11 +30,11 @@ class NoChangesTest extends TestCase
         $class = Target::class;
         $this->assertTransformerNotApplied($class);
 
-        new $class();
+        new Target();
 
         $originalFilePath = Util::getFilePath(Target::class);
-        $cachedFilePath   = Util::getTransformedFilePath(Target::class);
-        $this->assertFileExists($originalFilePath);
-        $this->assertFileDoesNotExist($cachedFilePath);
+        $cachedFilePath = Util::getTransformedFilePath(Target::class);
+        static::assertFileExists($originalFilePath);
+        static::assertFileDoesNotExist($cachedFilePath);
     }
 }

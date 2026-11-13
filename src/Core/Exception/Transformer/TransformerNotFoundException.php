@@ -14,12 +14,10 @@ class TransformerNotFoundException extends TransformerException
     /**
      * TransformerNotFoundException constructor.
      *
-     * @param class-string $transformerClass
+     * @param string $transformerClass
      */
     public function __construct(string $transformerClass)
     {
-        parent::__construct(
-            'Transformer class "' . $transformerClass . '" does not exist.',
-        );
+        parent::__construct('Transformer class "' . $transformerClass . '" does not exist.');
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpPropertyOnlyWrittenInspection */
 namespace Okapi\CodeTransformer\Core;
 
@@ -52,12 +53,10 @@ class AutoloadInterceptor implements ServiceInterface
             $loaderToUnregister = $loader;
 
             // Skip if not a class loader
-            if (!is_array($loader)
-                || !isset($loader[0])
-                || !$loader[0] instanceof ComposerClassLoader
-            ) {
+            if (!is_array($loader) || !$loader[0] instanceof ComposerClassLoader) {
                 // @codeCoverageIgnoreStart
                 continue;
+
                 // @codeCoverageIgnoreEnd
             }
 
@@ -66,7 +65,7 @@ class AutoloadInterceptor implements ServiceInterface
             $this->reflectionHelper->setClassLoader($originalClassLoader);
 
             // Create the Code Transformer class loader
-            $loader[0] = DI::make(ClassLoader::class, [
+            $classLoader = DI::make(ClassLoader::class, [
                 'originalClassLoader' => $originalClassLoader,
             ]);
 
@@ -74,7 +73,7 @@ class AutoloadInterceptor implements ServiceInterface
             spl_autoload_unregister($loaderToUnregister);
 
             // Register the Code Transformer class loader
-            spl_autoload_register($loader);
+            spl_autoload_register([$classLoader, 'loadClass']);
         }
     }
 }

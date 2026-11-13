@@ -4,6 +4,7 @@ namespace Okapi\CodeTransformer;
 
 use Closure;
 use DI\Attribute\Inject;
+use LogicException;
 use Okapi\CodeTransformer\Core\AutoloadInterceptor;
 use Okapi\CodeTransformer\Core\Cache\CacheStateManager;
 use Okapi\CodeTransformer\Core\CachedStreamFilter;
@@ -41,18 +42,6 @@ abstract class CodeTransformerKernel
     #[Inject]
     protected TransformerManager $transformerManager;
 
-    #[Inject]
-    private CacheStateManager $cacheStateManager;
-
-    #[Inject]
-    private StreamFilter $streamFilter;
-
-    #[Inject]
-    private CachedStreamFilter $cachedStreamFilter;
-
-    #[Inject]
-    private AutoloadInterceptor $autoloadInterceptor;
-
     /**
      * Make the constructor public to allow the DI container to instantiate the
      * class.
@@ -76,7 +65,7 @@ abstract class CodeTransformerKernel
     /**
      * The exclude paths. Paths/directories in this array will be excluded
      *
-     * @var array
+     * @var string[]
      */
     protected array $excludePaths = [];
 
@@ -125,7 +114,7 @@ abstract class CodeTransformerKernel
     /**
      * List of transformers to be applied.
      *
-     * @var class-string<Transformer>[]
+     * @var array<array-key, mixed>
      */
     protected array $transformers = [];
 
@@ -142,7 +131,13 @@ abstract class CodeTransformerKernel
             static::$instance = DI::get(static::class);
         }
 
-        return static::$instance;
+        /** @var mixed $instance */
+        $instance = static::$instance;
+        if (!$instance instanceof static) {
+            throw new LogicException('The container must return the requested kernel class.');
+        }
+
+        return $instance;
     }
 
     /**
@@ -158,7 +153,8 @@ abstract class CodeTransformerKernel
 
         if ($instance->throwExceptionOnDoubleInitialization) {
             $instance->ensureNotInitialized();
-        } elseif ($instance->initialized) {
+        }
+        if (!$instance->throwExceptionOnDoubleInitialization && $instance->initialized) {
             return;
         }
 
@@ -190,11 +186,11 @@ abstract class CodeTransformerKernel
     {
         // Set options
         $this->options->setOptions(
-            cacheDir:      $this->cacheDir,
+            cacheDir: $this->cacheDir,
             cacheFileMode: $this->cacheFileMode,
-            debug:         $this->debug,
-            environment:   $this->environment,
-            excludePaths:  $this->excludePaths,
+            debug: $this->debug,
+            environment: $this->environment,
+            excludePaths: $this->excludePaths,
         );
 
         // Add the transformers
@@ -230,15 +226,13 @@ abstract class CodeTransformerKernel
     {
         $this->options->register();
 
-        $this->transformerManager->registerCustomDependencyInjectionHandler(
-            $this->dependencyInjectionHandler(),
-        );
+        $this->transformerManager->registerCustomDependencyInjectionHandler($this->dependencyInjectionHandler());
         $this->transformerManager->register();
 
-        $this->cacheStateManager->register();
+        DI::get(CacheStateManager::class)->register();
 
-        $this->streamFilter->register();
-        $this->cachedStreamFilter->register();
+        DI::get(StreamFilter::class)->register();
+        DI::get(CachedStreamFilter::class)->register();
     }
 
     /**
@@ -249,7 +243,7 @@ abstract class CodeTransformerKernel
     protected function registerAutoloadInterceptor(): void
     {
         // Overload the composer class loaders
-        $this->autoloadInterceptor->register();
+        DI::get(AutoloadInterceptor::class)->register();
     }
 
     /**
@@ -263,7 +257,7 @@ abstract class CodeTransformerKernel
         $namespace = get_called_class();
 
         if ($namespace === CodeTransformerKernel::class) {
-            throw new DirectKernelInitializationException;
+            throw new DirectKernelInitializationException();
         }
     }
 }
